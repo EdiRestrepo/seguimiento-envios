@@ -1,0 +1,31 @@
+<aside class="sidebar" aria-label="Navegación principal">
+  <a class="sidebar__brand" routerLink="/dashboard" aria-label="Ir al inicio de NexCargo">
+    <span class="sidebar__brand-icon">N</span>
+    <span>
+      <strong>NexCargo</strong>
+      <small>Visibilidad sin límites</small>
+    </span>
+  </a>
+
+  <nav class="sidebar__nav">
+    @for (item of navItems; track item.route) {
+      <a
+        class="sidebar__link"
+        [routerLink]="item.route"
+        routerLinkActive="sidebar__link--active"
+        [routerLinkActiveOptions]="{ exact: item.route === '/dashboard' }"
+      >
+        <span aria-hidden="true">{{ item.icon }}</span>
+        {{ item.label }}
+      </a>
+    }
+  </nav>
+
+  <div class="sidebar__user">
+    <span class="sidebar__avatar">{{ session()?.user?.name?.charAt(0) ?? 'N' }}</span>
+    <span>
+      <strong>{{ session()?.user?.name ?? 'Usuario demo' }}</strong>
+      <small>{{ roleLabel() }}</small>
+    </span>
+  </div>
+</aside>

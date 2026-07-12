@@ -1,0 +1,54 @@
+<main class="auth-page">
+  <section class="auth-shell">
+    <div class="auth-shell__intro">
+      <div class="auth-shell__brand">NexCargo</div>
+      <h1>Centralización de envíos internacionales</h1>
+      <p>Plataforma para consultar información logística multimodal con datos simulados.</p>
+
+      <ul aria-label="Beneficios principales">
+        <li>Visibilidad en tiempo real</li>
+        <li>Gestión multimodal IMPO / EXPO</li>
+        <li>Base preparada para servicios REST</li>
+      </ul>
+    </div>
+
+    <mat-card class="auth-card">
+      <mat-card-header>
+        <mat-card-title>Bienvenido de vuelta</mat-card-title>
+        <mat-card-subtitle>Accede a tus envíos y estado logístico</mat-card-subtitle>
+      </mat-card-header>
+
+      <mat-card-content>
+        <form class="auth-form" [formGroup]="form" (ngSubmit)="submit()">
+          <mat-form-field appearance="outline">
+            <mat-label>Correo electrónico</mat-label>
+            <input matInput type="email" formControlName="email" autocomplete="email" />
+            @if (form.controls.email.touched && form.controls.email.invalid) {
+              <mat-error>Ingresa un correo válido.</mat-error>
+            }
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Contraseña</mat-label>
+            <input matInput type="password" formControlName="password" autocomplete="current-password" />
+            @if (form.controls.password.touched && form.controls.password.invalid) {
+              <mat-error>La contraseña debe tener mínimo 8 caracteres.</mat-error>
+            }
+          </mat-form-field>
+
+          @if (errorMessage) {
+            <p class="auth-form__error" role="alert">{{ errorMessage }}</p>
+          }
+
+          <button mat-flat-button type="submit" [disabled]="isSubmitting">
+            {{ isSubmitting ? 'Ingresando...' : 'Iniciar sesión' }}
+          </button>
+        </form>
+      </mat-card-content>
+
+      <mat-card-actions align="end">
+        <a routerLink="/register">Crear cuenta simulada</a>
+      </mat-card-actions>
+    </mat-card>
+  </section>
+</main>

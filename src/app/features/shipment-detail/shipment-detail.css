@@ -1,0 +1,15 @@
+.detail-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.detail-card {
+  padding: 28px;
+}
+
+.detail-card p {
+  margin: 8px 0 0;
+  color: var(--color-text-muted);
+}

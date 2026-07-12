@@ -1,0 +1,26 @@
+<section class="page">
+  @if (shipment$ | async; as shipment) {
+    <header class="detail-header">
+      <a mat-button routerLink="/shipments">Volver</a>
+      <div>
+        <h1 class="page__title">{{ shipment.documentNumber }}</h1>
+        <p class="page__subtitle">
+          {{ getOperationTypeLabel(shipment.operationType) }} ·
+          {{ getTransportModeLabel(shipment.transportMode) }} ·
+          {{ shipment.origin }} → {{ shipment.destination }}
+        </p>
+      </div>
+      <span class="status-chip status-chip--info">{{ getShipmentStatusLabel(shipment.status) }}</span>
+    </header>
+
+    <div class="surface-card detail-card">
+      <strong>Detalle base del envío</strong>
+      <p>Las pestañas de resumen, seguimiento, fechas, contenedor, financiero, documentos e historial se construirán en fases posteriores.</p>
+    </div>
+  } @else {
+    <div class="surface-card empty-state">
+      <strong>Envío no encontrado</strong>
+      <p>El identificador solicitado no existe en los datos simulados iniciales.</p>
+    </div>
+  }
+</section>

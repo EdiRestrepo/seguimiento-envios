@@ -1,1 +1,138 @@
-/* You can add global styles to this file, and also import other style files */
+@import '@angular/material/prebuilt-themes/azure-blue.css';
+
+:root {
+  --color-primary: #ff6b12;
+  --color-primary-strong: #e85b00;
+  --color-primary-soft: #fff1e8;
+  --color-secondary: #0ea5e9;
+  --color-secondary-soft: #e0f2fe;
+  --color-background: #f5f7fb;
+  --color-surface: #ffffff;
+  --color-surface-muted: #eef2f7;
+  --color-text: #061529;
+  --color-text-muted: #64748b;
+  --color-border: #d9e1ec;
+  --color-sidebar: #ff6b12;
+  --color-sidebar-active: #ff8a3d;
+  --color-success: #10b981;
+  --color-success-soft: #dcfce7;
+  --color-warning: #f59e0b;
+  --color-warning-soft: #fff7ed;
+  --color-danger: #ef4444;
+  --color-danger-soft: #fee2e2;
+  --color-info: #2563eb;
+  --shadow-card: 0 10px 24px rgba(15, 23, 42, 0.08);
+  --radius-card: 8px;
+  --radius-control: 8px;
+  --sidebar-width: 240px;
+  --header-height: 72px;
+  --font-family-base: Inter, "Segoe UI", Roboto, Arial, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--color-background);
+  color: var(--color-text);
+  font-family: var(--font-family-base);
+}
+
+a {
+  color: inherit;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+.page {
+  display: grid;
+  gap: 24px;
+}
+
+.page__header {
+  display: grid;
+  gap: 6px;
+}
+
+.page__title {
+  margin: 0;
+  color: var(--color-text);
+  font-size: 28px;
+  font-weight: 800;
+  line-height: 1.15;
+}
+
+.page__subtitle {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: 15px;
+}
+
+.surface-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-card);
+}
+
+.status-chip {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  min-height: 26px;
+  padding: 4px 10px;
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  background: var(--color-surface);
+  color: var(--color-text);
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.status-chip--issue {
+  border-color: #fed7aa;
+  background: var(--color-warning-soft);
+  color: #c2410c;
+}
+
+.status-chip--success {
+  border-color: #bbf7d0;
+  background: var(--color-success-soft);
+  color: #047857;
+}
+
+.status-chip--info {
+  border-color: #bfdbfe;
+  background: #eff6ff;
+  color: var(--color-info);
+}
+
+.empty-state,
+.error-state,
+.loading-state {
+  display: grid;
+  min-height: 180px;
+  place-items: center;
+  padding: 32px;
+  text-align: center;
+}
+
+.empty-state p,
+.error-state p,
+.loading-state p {
+  margin: 8px 0 0;
+  color: var(--color-text-muted);
+}

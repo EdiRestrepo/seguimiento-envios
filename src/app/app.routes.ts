@@ -1,3 +1,63 @@
 import { Routes } from '@angular/router';
 
-export const routes: Routes = [];
+import { authGuard } from './core/guards/auth.guard';
+import { MainLayout } from './layout/main-layout/main-layout';
+
+export const routes: Routes = [
+  {
+    path: 'login',
+    loadComponent: () => import('./features/auth/login/login').then((m) => m.Login),
+  },
+  {
+    path: 'register',
+    loadComponent: () => import('./features/auth/register/register').then((m) => m.Register),
+  },
+  {
+    path: '',
+    component: MainLayout,
+    canActivate: [authGuard],
+    canActivateChild: [authGuard],
+    children: [
+      {
+        path: '',
+        pathMatch: 'full',
+        redirectTo: 'dashboard',
+      },
+      {
+        path: 'dashboard',
+        loadComponent: () => import('./features/dashboard/dashboard').then((m) => m.Dashboard),
+      },
+      {
+        path: 'shipments',
+        loadComponent: () =>
+          import('./features/shipments/shipment-list/shipment-list').then((m) => m.ShipmentList),
+      },
+      {
+        path: 'shipments/:id',
+        loadComponent: () =>
+          import('./features/shipment-detail/shipment-detail').then((m) => m.ShipmentDetail),
+      },
+      {
+        path: 'history',
+        loadComponent: () => import('./features/history/history').then((m) => m.History),
+      },
+      {
+        path: 'notifications',
+        loadComponent: () =>
+          import('./features/notifications/notifications').then((m) => m.Notifications),
+      },
+      {
+        path: 'reports',
+        loadComponent: () => import('./features/reports/reports').then((m) => m.Reports),
+      },
+      {
+        path: 'settings',
+        loadComponent: () => import('./features/settings/settings').then((m) => m.Settings),
+      },
+    ],
+  },
+  {
+    path: '**',
+    redirectTo: 'dashboard',
+  },
+];

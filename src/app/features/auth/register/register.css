@@ -1,0 +1,30 @@
+.auth-page {
+  display: grid;
+  min-height: 100vh;
+  place-items: center;
+  padding: 24px;
+  background: linear-gradient(135deg, #071225 0%, #132252 100%);
+}
+
+.register-card {
+  width: min(100%, 520px);
+  padding: 26px;
+  border-radius: 14px;
+}
+
+.register-form {
+  display: grid;
+  gap: 14px;
+  margin-top: 20px;
+}
+
+.register-form button {
+  min-height: 44px;
+  background: var(--color-primary);
+}
+
+mat-card-actions a {
+  color: var(--color-primary-strong);
+  font-weight: 700;
+  text-decoration: none;
+}

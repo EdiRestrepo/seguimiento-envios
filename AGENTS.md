@@ -1,0 +1,571 @@
+# AGENTS.md
+
+## 1. Contexto del proyecto
+
+Este repositorio contiene el frontend de un trabajo de grado de la
+Especialización en Ingeniería de Software.
+
+El producto es una plataforma tecnológica para centralizar información de
+envíos internacionales de importación y exportación, con el propósito de
+mejorar la trazabilidad, reducir los tiempos de respuesta y mejorar la
+satisfacción de los clientes.
+
+Nombre provisional del producto:
+
+NexCargo
+
+La aplicación debe permitir consultar y visualizar información logística de
+envíos internacionales aéreos y marítimos.
+
+## 2. Stack tecnológico
+
+Frontend:
+
+- Angular
+- TypeScript estricto
+- Componentes standalone
+- Angular Router
+- Reactive Forms
+- RxJS
+- Angular Material o componentes nativos reutilizables
+- Chart.js únicamente para gráficos
+- Leaflet y OpenStreetMap únicamente para mapas
+- CSS o SCSS responsive
+
+Backend futuro:
+
+- C# .NET 8
+- API REST
+- PostgreSQL
+- JWT y OAuth 2.0
+
+En esta etapa no existe backend. Toda la aplicación debe funcionar con datos
+simulados, pero debe quedar preparada para reemplazar los servicios mock por
+servicios HTTP sin modificar los componentes visuales.
+
+## 3. Fuentes funcionales y visuales
+
+Antes de implementar una funcionalidad, revisar:
+
+1. Product Backlog.xlsx C:\especializacion_ing_software\trabajo_de_grado
+2. Sabana de datos.xlsx C:\especializacion_ing_software\trabajo_de_grado
+3. Trabajo_de_grado_centralización_plataforma_envios.docx C:\especializacion_ing_software\trabajo_de_grado
+4. Mockups de Base44 suministrados por el equipo
+5. Código existente en el repositorio
+
+Los mockups son la referencia visual principal.
+
+No se deben inventar funcionalidades que contradigan el backlog, la sábana de
+datos o los mockups.
+
+## 4. Pantallas de referencia
+
+La aplicación debe incluir progresivamente:
+
+### Acceso
+
+- Inicio de sesión
+- Registro de usuario
+- Recuperación de contraseña simulada
+- Validación de formularios
+- Autenticación mock
+- Roles simulados
+
+### Layout principal
+
+- Menú lateral
+- Encabezado
+- Identidad del usuario
+- Navegación responsive
+- Estado de opción activa
+- Cierre de sesión
+
+### Inicio o dashboard
+
+- Saludo al usuario
+- Buscador de envíos
+- Total de envíos
+- Total de importaciones
+- Total de exportaciones
+- Total de envíos aéreos
+- Total de envíos marítimos
+- Total de envíos con novedad
+- Envíos recientes
+- Indicadores resumidos
+
+### Mis envíos
+
+- Tabla paginada
+- Búsqueda por HBL, AWB, cliente, origen o destino
+- Filtro por importación o exportación
+- Filtro por modalidad AIR o SEA
+- Filtro por estado
+- Navegación al detalle
+- Estado vacío
+- Estado de carga
+- Manejo de errores simulados
+
+### Detalle del envío
+
+El detalle debe incluir pestañas:
+
+- Resumen
+- Seguimiento
+- Fechas logísticas
+- Contenedor
+- Financiero
+- Documentos
+- Historial
+
+### Seguimiento
+
+- Mapa
+- Origen
+- Destino
+- Ruta
+- Estado actual
+- Próxima parada
+- Progreso porcentual
+- Etapas logísticas
+
+### Fechas logísticas
+
+- Bodega de origen
+- ETD
+- ATD
+- ETA
+- ATA
+- Bodega destino
+- Nacionalización
+- Despacho
+- Planilla
+- Entrega
+- Indicadores de retraso
+
+### Contenedor
+
+- Tipo de contenedor
+- Cantidad
+- Número
+- Días libres
+- Días restantes
+- Fecha de devolución
+- Días de demora
+- Valor por día
+- Total de demoras
+- Depósito
+
+### Financiero
+
+- Solicitud de anticipo
+- Pago del anticipo
+- Valor del anticipo
+- Factura del proveedor
+- Factura TCC
+- Número de factura
+- Fecha
+- Descripción del gasto
+- Subtotal
+- IVA
+- Total
+
+### Documentos
+
+- Lista de documentos
+- Tipo
+- Nombre
+- Fecha
+- Estado
+- Acción de descarga simulada
+- Acción de visualización simulada
+
+### Historial
+
+- Eventos del envío
+- Fecha y hora
+- Estado
+- Ubicación
+- Descripción
+- Usuario o fuente del evento
+
+### Notificaciones
+
+- Listado de notificaciones
+- Leídas y no leídas
+- Notificación de demora
+- Cambio de estado
+- En tránsito
+- En aduana
+- Entregado
+- Preferencias simuladas
+
+### Reportes
+
+- Total de envíos
+- Entregados
+- Con novedad
+- Total facturado
+- Total de anticipos
+- Total de demoras
+- Distribución por operación
+- Distribución por modalidad
+- Distribución por estado
+- Top de clientes
+- Exportación simulada
+
+### Ajustes
+
+- Preferencias de notificación
+- Gestión de usuarios
+- Gestión de roles
+- Parámetros maestros
+
+## 5. Arquitectura del frontend
+
+Usar una arquitectura por funcionalidades:
+
+src/app/
+  core/
+    guards/
+    interceptors/
+    models/
+    services/
+    tokens/
+    utils/
+
+  shared/
+    components/
+    directives/
+    pipes/
+    ui/
+    utils/
+
+  layout/
+    main-layout/
+    sidebar/
+    header/
+    user-menu/
+
+  features/
+    auth/
+    dashboard/
+    shipments/
+    shipment-detail/
+    history/
+    notifications/
+    reports/
+    settings/
+
+  mocks/
+    data/
+    services/
+    factories/
+
+No crear un único componente grande.
+
+Cada página debe dividirse en componentes reutilizables cuando sea razonable.
+
+## 6. Modelos de dominio
+
+Definir interfaces y tipos explícitos para al menos:
+
+- User
+- UserRole
+- AuthSession
+- Shipment
+- ShipmentStatus
+- ShipmentEvent
+- LogisticDates
+- Container
+- ShipmentFinancialInfo
+- Invoice
+- AdvancePayment
+- ShipmentDocument
+- Notification
+- NotificationPreference
+- DashboardMetrics
+- ReportMetrics
+- PaginatedResult
+- SearchFilters
+
+No utilizar `any`.
+
+Los valores ausentes deben representarse con propiedades opcionales o `null`
+cuando sea necesario.
+
+## 7. Estados principales
+
+Tipos de operación:
+
+- IMPO
+- EXPO
+
+Modalidades:
+
+- AIR
+- SEA
+
+Estados logísticos iniciales:
+
+- PENDING
+- ORIGIN_WAREHOUSE
+- ORIGIN_CUSTOMS
+- IN_TRANSIT
+- DESTINATION_CUSTOMS
+- NATIONALIZED
+- DESTINATION_WAREHOUSE
+- DISPATCHED
+- DELIVERED
+- WITH_ISSUE
+- CANCELLED
+
+Crear funciones centralizadas para convertir estados técnicos en textos
+visibles en español.
+
+## 8. Acceso a datos
+
+Los componentes no deben importar directamente archivos mock.
+
+Todo acceso a datos debe realizarse mediante servicios.
+
+Definir contratos o abstracciones como:
+
+- AuthDataSource
+- ShipmentDataSource
+- NotificationDataSource
+- ReportDataSource
+- UserDataSource
+
+Implementar inicialmente:
+
+- MockAuthService
+- MockShipmentService
+- MockNotificationService
+- MockReportService
+- MockUserService
+
+Simular latencia usando RxJS.
+
+Los servicios deben devolver `Observable`.
+
+Preparar la arquitectura para reemplazarlos posteriormente por:
+
+- ApiAuthService
+- ApiShipmentService
+- ApiNotificationService
+- ApiReportService
+- ApiUserService
+
+## 9. Datos simulados
+
+Construir los datos simulados a partir de la sábana de datos.
+
+No duplicar manualmente datos dentro de múltiples componentes.
+
+Mantener una única fuente central de datos.
+
+Los datos deben incluir casos variados:
+
+- Importaciones
+- Exportaciones
+- Envíos aéreos
+- Envíos marítimos
+- Envíos entregados
+- En tránsito
+- En aduana origen
+- En aduana destino
+- Con novedad
+- Con retraso
+- Con y sin contenedor
+- Con información financiera
+- Con documentos
+- Con eventos históricos
+
+Los indicadores del dashboard y reportes deben calcularse desde los datos mock,
+no escribirse como valores fijos en el HTML.
+
+## 10. Autenticación simulada
+
+Implementar autenticación mock con almacenamiento local.
+
+Usuarios iniciales:
+
+- cliente@demo.com
+- operador@demo.com
+- administrador@demo.com
+
+Roles:
+
+- CLIENT
+- OPERATOR
+- ADMIN
+
+La contraseña puede ser:
+
+Demo1234
+
+Requisitos:
+
+- Guard para rutas privadas
+- Guard o control para rutas por rol
+- Persistencia simulada de sesión
+- Cierre de sesión
+- Redirección a login
+- No almacenar contraseñas reales
+
+## 11. Rutas iniciales
+
+Configurar lazy loading:
+
+- /login
+- /register
+- /dashboard
+- /shipments
+- /shipments/:id
+- /history
+- /notifications
+- /reports
+- /settings
+- /settings/notifications
+- /settings/users
+- /settings/master-data
+
+Agregar ruta 404 o redirección segura.
+
+## 12. Diseño visual
+
+Tomar los mockups de Base44 como referencia:
+
+- Fondo principal claro
+- Menú lateral naranja
+- Texto principal azul oscuro
+- Estados y alertas mediante chips
+- Tarjetas blancas
+- Bordes suaves
+- Sombras discretas
+- Espaciado consistente
+- Tablas legibles
+- Diseño empresarial
+- Diseño responsive
+
+No copiar textos como “Mockup Auth” en la versión final.
+
+Unificar el nombre del producto en toda la aplicación.
+
+Antes de hacerlo, reportar si actualmente aparecen varios nombres como
+Track360 o WebTracker y dejarlo enNexCargo.
+
+## 13. Responsive y accesibilidad
+
+La aplicación debe funcionar en:
+
+- Escritorio
+- Tablet
+- Móvil
+
+Requisitos:
+
+- Menú lateral colapsable
+- Tablas adaptables o con desplazamiento horizontal
+- Formularios con etiquetas
+- Navegación por teclado
+- Contraste legible
+- Botones con texto o etiquetas accesibles
+- `aria-label` donde corresponda
+- Mensajes de validación claros
+
+## 14. Calidad
+
+Aplicar:
+
+- TypeScript estricto
+- Componentes standalone
+- ChangeDetectionStrategy.OnPush cuando sea viable
+- `trackBy` o `track` en listas
+- Señales de Angular cuando sean apropiadas
+- RxJS para operaciones asíncronas
+- Reactive Forms
+- No suscribirse manualmente sin gestionar la destrucción
+- No dejar código muerto
+- No dejar `console.log`
+- No duplicar lógica
+- No codificar textos de estado repetidos
+- No mezclar lógica de negocio con HTML
+- No modificar configuración crítica sin justificarlo
+
+## 15. Estados de interfaz
+
+Toda pantalla que consulte datos debe contemplar:
+
+- Loading
+- Empty
+- Success
+- Error
+
+Los errores simulados deben mostrar mensajes comprensibles y permitir
+reintentar.
+
+## 16. Pruebas mínimas
+
+Crear pruebas para:
+
+- Servicios mock
+- Login
+- Guards
+- Filtros de envíos
+- Paginación
+- Cálculo de indicadores
+- Navegación al detalle
+- Formateo de estados
+- Validaciones de formularios
+
+No eliminar pruebas existentes para conseguir que el build pase.
+
+## 17. Forma obligatoria de trabajo
+
+Para cada tarea:
+
+1. Analizar el código existente.
+2. Identificar la funcionalidad del backlog relacionada.
+3. Presentar un plan breve.
+4. Indicar archivos que se crearán o modificarán.
+5. Esperar aprobación cuando la tarea pueda cambiar arquitectura o instalar
+   dependencias.
+6. Implementar cambios pequeños.
+7. Ejecutar formateo, pruebas y build.
+8. Corregir errores producidos por la implementación.
+9. Mostrar un resumen de cambios.
+10. Informar riesgos, supuestos y pendientes.
+
+## 18. Restricciones
+
+No hacer lo siguiente:
+
+- No construir toda la aplicación en una sola tarea.
+- No instalar dependencias sin aprobación.
+- No modificar archivos de configuración innecesariamente.
+- No conectar todavía PostgreSQL desde Angular.
+- No implementar lógica de backend dentro del frontend.
+- No usar datos reales sensibles.
+- No exponer información empresarial confidencial.
+- No usar `any`.
+- No crear componentes monolíticos.
+- No reemplazar estilos globales sin revisar impacto.
+- No alterar funcionalidades ya implementadas sin justificarlo.
+- No inventar endpoints definitivos.
+- No afirmar que una integración existe si está simulada.
+
+## 19. Criterio de finalización
+
+Una tarea solo se considera terminada cuando:
+
+- Compila correctamente
+- Las pruebas relacionadas pasan
+- Tiene estado de carga
+- Tiene estado vacío
+- Tiene manejo de error
+- Es responsive
+- No genera errores en consola
+- Mantiene tipado estricto
+- Está integrada con las rutas correspondientes
+- Se documentan los cambios

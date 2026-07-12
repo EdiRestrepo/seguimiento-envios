@@ -1,0 +1,67 @@
+.shipments-toolbar {
+  padding: 18px 20px;
+}
+
+.shipments-toolbar label {
+  display: grid;
+  gap: 8px;
+  color: var(--color-text-muted);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.shipments-toolbar input {
+  width: 100%;
+  min-height: 42px;
+  padding: 0 14px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-control);
+  outline: none;
+}
+
+.shipments-toolbar input:focus {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px var(--color-primary-soft);
+}
+
+.shipments-card {
+  overflow: hidden;
+}
+
+.shipments-table {
+  min-width: 980px;
+}
+
+.shipments-table__row {
+  display: grid;
+  grid-template-columns: 1.2fr 1.1fr 1.2fr 1.1fr 1.4fr 0.8fr 0.6fr;
+  gap: 14px;
+  align-items: center;
+  min-height: 56px;
+  padding: 0 18px;
+  border-bottom: 1px solid var(--color-border);
+  color: var(--color-text-muted);
+  font-size: 13px;
+}
+
+.shipments-table__row strong {
+  color: var(--color-primary-strong);
+}
+
+.shipments-table__row--head {
+  min-height: 48px;
+  background: var(--color-surface-muted);
+  color: var(--color-text-muted);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.shipments-table__row:last-child {
+  border-bottom: 0;
+}
+
+@media (max-width: 1100px) {
+  .shipments-card {
+    overflow-x: auto;
+  }
+}

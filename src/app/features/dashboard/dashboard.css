@@ -1,0 +1,8 @@
+.placeholder {
+  padding: 28px;
+}
+
+.placeholder p {
+  margin: 8px 0 0;
+  color: var(--color-text-muted);
+}

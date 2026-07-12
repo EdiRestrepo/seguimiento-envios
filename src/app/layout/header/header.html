@@ -1,0 +1,11 @@
+<header class="header">
+  <div>
+    <p class="header__eyebrow">Plataforma logística</p>
+    <strong>NexCargo</strong>
+  </div>
+
+  <div class="header__actions">
+    <span class="header__user">{{ session()?.user?.email ?? 'sesion@demo.com' }}</span>
+    <button mat-stroked-button type="button" (click)="logout()">Cerrar sesión</button>
+  </div>
+</header>

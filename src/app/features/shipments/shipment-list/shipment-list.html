@@ -1,0 +1,67 @@
+<section class="page">
+  <header class="page__header">
+    <h1 class="page__title">Envíos internacionales</h1>
+    <p class="page__subtitle">Consulta inicial de envíos IMPO / EXPO · AIR / SEA.</p>
+  </header>
+
+  <div class="surface-card shipments-toolbar">
+    <label>
+      <span>Buscar</span>
+      <input
+        type="search"
+        [formControl]="searchControl"
+        placeholder="HBL, cliente, origen o destino"
+        aria-label="Buscar envíos"
+      />
+    </label>
+  </div>
+
+  @if (viewModel$ | async; as viewModel) {
+    <div class="surface-card shipments-card">
+      @if (viewModel.state === 'loading') {
+        <div class="loading-state">
+          <strong>Cargando envíos...</strong>
+          <p>Consultando datos simulados.</p>
+        </div>
+      } @else if (viewModel.state === 'error') {
+        <div class="error-state">
+          <strong>No se pudo cargar la información</strong>
+          <p>{{ viewModel.message }}</p>
+        </div>
+      } @else if (viewModel.state === 'empty') {
+        <div class="empty-state">
+          <strong>No hay envíos para mostrar</strong>
+          <p>Ajusta la búsqueda o vuelve a intentar con otro criterio.</p>
+        </div>
+      } @else {
+        <div class="shipments-table" role="table" aria-label="Listado de envíos">
+          <div class="shipments-table__row shipments-table__row--head" role="row">
+            <span role="columnheader">Documento</span>
+            <span role="columnheader">Estado</span>
+            <span role="columnheader">Op · Modal</span>
+            <span role="columnheader">Cliente</span>
+            <span role="columnheader">Origen → Destino</span>
+            <span role="columnheader">ETA</span>
+            <span role="columnheader">Ver</span>
+          </div>
+
+          @for (shipment of viewModel.shipments; track shipment.id) {
+            <div class="shipments-table__row" role="row">
+              <strong role="cell">{{ shipment.documentNumber }}</strong>
+              <span role="cell" class="status-chip" [class.status-chip--issue]="shipment.status === 'WITH_ISSUE'">
+                {{ getShipmentStatusLabel(shipment.status) }}
+              </span>
+              <span role="cell">
+                {{ getOperationTypeLabel(shipment.operationType) }} · {{ getTransportModeLabel(shipment.transportMode) }}
+              </span>
+              <span role="cell">{{ shipment.client }}</span>
+              <span role="cell">{{ shipment.origin }} → {{ shipment.destination }}</span>
+              <span role="cell">{{ shipment.logisticDates.eta ?? 'Sin fecha' }}</span>
+              <a role="cell" mat-button [routerLink]="['/shipments', shipment.id]">Abrir</a>
+            </div>
+          }
+        </div>
+      }
+    </div>
+  }
+</section>
