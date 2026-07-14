@@ -116,6 +116,21 @@ docker exec -it <nombre_contenedor> <comando>
 ejemplo: docker exec -it postgres-db psql -U usuario - "CREATE TABLE usuarios (nombre text);"
 
 
+### eliminar volumenes
+docker volume rm <nombre_volumen>
+
+### bindiar un contenedor con mi maquina local
+docker run -d -p 3000:3000 \
+  --name mi-aplicacion \
+  -v "$(pwd):/app" \
+  app-volumen:latest \
+  sh -c "node --watch app.js"
+
+
+### modelos
+docker model list
+
+docker model pull ai/smollm2
 
 
 ----
