@@ -132,6 +132,8 @@ docker model list
 
 docker model pull ai/smollm2
 
+docker ai
+
 
 ----
 
