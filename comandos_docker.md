@@ -54,6 +54,10 @@ docker ps
 ### eliminar contenedor
 docker rm <nombre_contenedor>
 
+
+### eliminar un contenedor forzadamente
+docker rm -f <nombre_contenedor>
+
 ### listar imagenes
 docker images
 
@@ -63,6 +67,54 @@ docker run -e "NOMBRE=Juan" -e "APELLIDO=Perez"
 
 ### levantar la aplicacion con docker y variables de entorno con archivo .env
 docker run -d -p 8080:80 --env-file .env --name seguimiento-envios-app 
+
+### ver uso de espacio
+docker system df
+
+### eliminar todo lo que no se esta usando
+docker system prune 
+
+
+### eliminar todo
+docker system prune -a
+
+### iniciar docker
+docker init
+
+### buscar una imagen en docker hub
+docker search <nombre_imagen>
+
+
+### renombrar una imagen
+docker tag <imagen_vieja> <imagen_nueva>
+
+### publicar una imagen
+docker push <nombre_usuario>/<nombre_imagen>:<tag>
+ejemplo:
+docker push juanperez/seguimiento-envios:1.0
+
+### loguear la terminal con dockerhub
+docker login
+
+### volumenes
+docker volume create <nombre_volumen>
+
+### levantar una base de datos postgres con volumenes
+
+docker run -d \
+  --name postgres-db \
+  -e POSTGRES_USER=usuario \
+  -e POSTGRES_PASSWORD=contraseña \
+  -e POSTGRES_DB=nombre_base_datos \
+  -v nombre_volumen:/var/lib/postgresql/data \
+  -p 5432:5432 \
+  postgres:latest
+
+
+### ejecutar comandos a un conetenedor sin necesidad de entrar al contenedor
+docker exec -it <nombre_contenedor> <comando>
+ejemplo: docker exec -it postgres-db psql -U usuario - "CREATE TABLE usuarios (nombre text);"
+
 
 
 
