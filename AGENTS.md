@@ -12,7 +12,7 @@ satisfacción de los clientes.
 
 Nombre provisional del producto:
 
-NexCargo
+Conexion360
 
 La aplicación debe permitir consultar y visualizar información logística de
 envíos internacionales aéreos y marítimos.
@@ -453,7 +453,7 @@ No copiar textos como “Mockup Auth” en la versión final.
 Unificar el nombre del producto en toda la aplicación.
 
 Antes de hacerlo, reportar si actualmente aparecen varios nombres como
-Track360 o WebTracker y dejarlo enNexCargo.
+otros nombres anteriores y dejarlo en Conexion360.
 
 ## 13. Responsive y accesibilidad
 

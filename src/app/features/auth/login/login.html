@@ -1,9 +1,9 @@
 <main class="auth-page">
   <section class="auth-shell">
     <div class="auth-shell__intro">
-      <div class="auth-shell__brand">NexCargo</div>
+      <div class="auth-shell__brand">Conexion360</div>
       <h1>Centralización de envíos internacionales</h1>
-      <p>Plataforma para consultar información logística multimodal con datos simulados.</p>
+      <p>Plataforma para consultar información logística multimodal con acceso seguro.</p>
 
       <ul aria-label="Beneficios principales">
         <li>Visibilidad en tiempo real</li>
@@ -28,26 +28,18 @@
             }
           </mat-form-field>
 
-          <mat-form-field appearance="outline">
-            <mat-label>Contraseña</mat-label>
-            <input matInput type="password" formControlName="password" autocomplete="current-password" />
-            @if (form.controls.password.touched && form.controls.password.invalid) {
-              <mat-error>La contraseña debe tener mínimo 8 caracteres.</mat-error>
-            }
-          </mat-form-field>
-
           @if (errorMessage) {
             <p class="auth-form__error" role="alert">{{ errorMessage }}</p>
           }
 
           <button mat-flat-button type="submit" [disabled]="isSubmitting">
-            {{ isSubmitting ? 'Ingresando...' : 'Iniciar sesión' }}
+            {{ isSubmitting ? 'Redirigiendo...' : 'Iniciar sesión' }}
           </button>
         </form>
       </mat-card-content>
 
       <mat-card-actions align="end">
-        <a routerLink="/register">Crear cuenta simulada</a>
+        <a routerLink="/register">Crear cuenta</a>
       </mat-card-actions>
     </mat-card>
   </section>

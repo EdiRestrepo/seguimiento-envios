@@ -1,31 +1,49 @@
 import { TestBed } from '@angular/core/testing';
-import { provideRouter, Router } from '@angular/router';
+import { ActivatedRouteSnapshot, Router, RouterStateSnapshot, provideRouter } from '@angular/router';
+import { BehaviorSubject, Observable } from 'rxjs';
 
 import { authGuard } from './auth.guard';
 import { AuthSessionService } from '../services/auth-session.service';
 
 describe('authGuard', () => {
+  let isAuthenticatedSubject: BehaviorSubject<boolean>;
+
   beforeEach(() => {
-    localStorage.clear();
+    isAuthenticatedSubject = new BehaviorSubject<boolean>(false);
+
     TestBed.configureTestingModule({
-      providers: [provideRouter([])],
+      providers: [
+        provideRouter([]),
+        {
+          provide: AuthSessionService,
+          useValue: {
+            isAuthenticated$: isAuthenticatedSubject.asObservable(),
+          },
+        },
+      ],
     });
   });
 
-  it('should redirect anonymous users to login', () => {
-    const result = TestBed.runInInjectionContext(() => authGuard({} as never, {} as never));
+  it('should redirect anonymous users to the local login page', (done) => {
+    const result = TestBed.runInInjectionContext(() =>
+      authGuard({} as ActivatedRouteSnapshot, { url: '/dashboard' } as RouterStateSnapshot),
+    ) as Observable<boolean | ReturnType<Router['createUrlTree']>>;
     const router = TestBed.inject(Router);
 
-    expect(result).toEqual(router.createUrlTree(['/login']));
+    result.subscribe((canActivate) => {
+      expect(canActivate).toEqual(router.createUrlTree(['/login']));
+      done();
+    });
   });
 
   it('should allow authenticated users', (done) => {
-    const authSession = TestBed.inject(AuthSessionService);
+    isAuthenticatedSubject.next(true);
+    const result = TestBed.runInInjectionContext(() =>
+      authGuard({} as ActivatedRouteSnapshot, { url: '/dashboard' } as RouterStateSnapshot),
+    ) as Observable<boolean>;
 
-    authSession.login('cliente@demo.com', 'Demo1234').subscribe(() => {
-      const result = TestBed.runInInjectionContext(() => authGuard({} as never, {} as never));
-
-      expect(result).toBeTrue();
+    result.subscribe((canActivate) => {
+      expect(canActivate).toBeTrue();
       done();
     });
   });

@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, DestroyRef, inject } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Router, RouterLink } from '@angular/router';
+import { RouterLink } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -20,8 +20,8 @@ export class Register {
   private readonly authSession = inject(AuthSessionService);
   private readonly destroyRef = inject(DestroyRef);
   private readonly formBuilder = inject(FormBuilder);
-  private readonly router = inject(Router);
 
+  protected errorMessage = '';
   protected isSubmitting = false;
   protected readonly form = this.formBuilder.nonNullable.group({
     name: ['', [Validators.required, Validators.minLength(3)]],
@@ -35,14 +35,20 @@ export class Register {
     }
 
     this.isSubmitting = true;
-    const { name, email } = this.form.getRawValue();
+    this.errorMessage = '';
+    const { email } = this.form.getRawValue();
 
     this.authSession
-      .register(name, email)
+      .register(email)
       .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe(() => {
-        this.isSubmitting = false;
-        void this.router.navigate(['/dashboard']);
+      .subscribe({
+        next: () => {
+          this.isSubmitting = false;
+        },
+        error: (error: Error) => {
+          this.isSubmitting = false;
+          this.errorMessage = error.message;
+        },
       });
   }
 }

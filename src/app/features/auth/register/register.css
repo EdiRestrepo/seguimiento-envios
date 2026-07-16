@@ -23,6 +23,15 @@
   background: var(--color-primary);
 }
 
+.register-form__error {
+  margin: 0;
+  padding: 10px 12px;
+  border-radius: var(--radius-control);
+  background: var(--color-danger-soft);
+  color: #b91c1c;
+  font-size: 13px;
+}
+
 mat-card-actions a {
   color: var(--color-primary-strong);
   font-weight: 700;
