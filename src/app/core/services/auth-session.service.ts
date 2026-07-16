@@ -6,6 +6,7 @@ import { EMPTY, Observable, catchError, filter, map, switchMap, take } from 'rxj
 
 import { AuthSession } from '../models/auth-session.model';
 import { UserRole } from '../models/user.model';
+import { environment } from '../../../environments/environment';
 
 @Injectable({
   providedIn: 'root',
@@ -95,7 +96,14 @@ export class AuthSessionService {
         filter(Boolean),
         take(1),
         switchMap(() =>
-          this.auth0.getAccessTokenSilently().pipe(
+          this.auth0
+            .getAccessTokenSilently({
+              authorizationParams: {
+                audience: environment.auth0.audience,
+                scope: environment.auth0.scope,
+              },
+            })
+            .pipe(
             catchError((error: Error) => {
               console.error('[Auth0] No fue posible obtener el access_token', error);
               return EMPTY;

@@ -3,7 +3,7 @@ export const environment = {
   auth0: {
     domain: '',
     clientId: '',
-    audience: '',
+    audience: 'https://api.conexion360.com',
     scope: 'openid profile email',
   },
   api: {
