@@ -149,3 +149,32 @@ Expira en 10 horas según tu captura.
 Para backend C# no uses el token cuyo aud es el Client ID.
 Crea una API en Auth0 para Conexion360 y pide el token con ese audience.
 El backend valida ese JWT y luego busca el usuario en PostgreSQL por sub.
+
+
+[Conexion360] Petición que el frontend enviaría al backend:
+{
+  method: "GET",
+  url: "https://localhost:7001/api/auth/me",
+  headers: {
+    Authorization: "Bearer <mock-jwt>"
+  },
+  expectedValidation: {
+    issuer: "https://dev-5lxfpxxjzz7ikezw.us.auth0.com/",
+    audience: "https://api.conexion360.com"
+  }
+}
+Y luego:
+[Conexion360] Respuesta simulada del backend:
+{
+  status: 200,
+  body: {
+    id: "user-client",
+    auth0UserId: "auth0|mock-correo@demo.com",
+    name: "...",
+    email: "...",
+    company: "...",
+    role: "CLIENT",
+    isActive: true,
+    permissions: [...]
+  }
+}

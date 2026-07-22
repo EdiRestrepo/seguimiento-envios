@@ -11,13 +11,14 @@
 .header__eyebrow {
   margin: 0 0 2px;
   color: var(--color-text-muted);
-  font-size: 12px;
+  font-size: var(--font-size-label);
   font-weight: 700;
   text-transform: uppercase;
 }
 
 .header strong {
-  font-size: 18px;
+  color: var(--color-primary);
+  font-size: var(--font-size-h3);
 }
 
 .header__actions {
@@ -28,7 +29,7 @@
 
 .header__user {
   color: var(--color-text-muted);
-  font-size: 13px;
+  font-size: var(--font-size-label);
 }
 
 @media (max-width: 720px) {

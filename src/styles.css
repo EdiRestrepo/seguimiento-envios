@@ -1,32 +1,40 @@
 @import '@angular/material/prebuilt-themes/azure-blue.css';
 
 :root {
-  --color-primary: #ff6b12;
-  --color-primary-strong: #e85b00;
-  --color-primary-soft: #fff1e8;
-  --color-secondary: #0ea5e9;
-  --color-secondary-soft: #e0f2fe;
-  --color-background: #f5f7fb;
+  --color-primary: #12355b;
+  --color-primary-strong: #0b2545;
+  --color-primary-soft: #e8f0f8;
+  --color-secondary: #00b8a9;
+  --color-secondary-soft: #dffcf8;
+  --color-alert: #f97316;
+  --color-alert-soft: #fff7ed;
+  --color-background: #f8fafc;
   --color-surface: #ffffff;
-  --color-surface-muted: #eef2f7;
-  --color-text: #061529;
-  --color-text-muted: #64748b;
-  --color-border: #d9e1ec;
-  --color-sidebar: #ff6b12;
-  --color-sidebar-active: #ff8a3d;
-  --color-success: #10b981;
+  --color-surface-muted: #f1f5f9;
+  --color-text: #0f172a;
+  --color-text-muted: #334155;
+  --color-border: #dbe3ef;
+  --color-sidebar: #12355b;
+  --color-sidebar-active: #00b8a9;
+  --color-success: #22c55e;
   --color-success-soft: #dcfce7;
-  --color-warning: #f59e0b;
+  --color-warning: #f97316;
   --color-warning-soft: #fff7ed;
-  --color-danger: #ef4444;
+  --color-danger: #f97316;
   --color-danger-soft: #fee2e2;
-  --color-info: #2563eb;
+  --color-info: #00b8a9;
   --shadow-card: 0 10px 24px rgba(15, 23, 42, 0.08);
   --radius-card: 8px;
   --radius-control: 8px;
   --sidebar-width: 240px;
   --header-height: 72px;
-  --font-family-base: Inter, "Segoe UI", Roboto, Arial, sans-serif;
+  --font-family-base: "IBM Plex Sans", "Segoe UI", Roboto, Arial, sans-serif;
+  --font-size-h1: 40px;
+  --font-size-h2: 30px;
+  --font-size-h3: 24px;
+  --font-size-text: 16px;
+  --font-size-label: 14px;
+  --font-size-button: 15px;
 }
 
 * {
@@ -43,6 +51,7 @@ body {
   background: var(--color-background);
   color: var(--color-text);
   font-family: var(--font-family-base);
+  font-size: var(--font-size-text);
 }
 
 a {
@@ -69,7 +78,7 @@ textarea {
 .page__title {
   margin: 0;
   color: var(--color-text);
-  font-size: 28px;
+  font-size: var(--font-size-h1);
   font-weight: 800;
   line-height: 1.15;
 }
@@ -77,7 +86,7 @@ textarea {
 .page__subtitle {
   margin: 0;
   color: var(--color-text-muted);
-  font-size: 15px;
+  font-size: var(--font-size-text);
 }
 
 .surface-card {
@@ -97,15 +106,15 @@ textarea {
   border-radius: 999px;
   background: var(--color-surface);
   color: var(--color-text);
-  font-size: 12px;
+  font-size: var(--font-size-label);
   font-weight: 700;
   line-height: 1;
 }
 
 .status-chip--issue {
   border-color: #fed7aa;
-  background: var(--color-warning-soft);
-  color: #c2410c;
+  background: var(--color-alert-soft);
+  color: var(--color-alert);
 }
 
 .status-chip--success {
@@ -116,8 +125,34 @@ textarea {
 
 .status-chip--info {
   border-color: #bfdbfe;
-  background: #eff6ff;
+  background: var(--color-secondary-soft);
   color: var(--color-info);
+}
+
+.app-icon {
+  display: inline-grid;
+  width: 22px;
+  height: 22px;
+  place-items: center;
+  font-size: 18px;
+  line-height: 1;
+}
+
+.text-label {
+  color: var(--color-text-muted);
+  font-size: var(--font-size-label);
+  font-weight: 700;
+}
+
+.mat-mdc-unelevated-button,
+.mat-mdc-raised-button,
+.mat-mdc-outlined-button,
+.mat-mdc-button,
+.mat-mdc-stroked-button,
+.mat-mdc-flat-button {
+  font-family: var(--font-family-base) !important;
+  font-size: var(--font-size-button) !important;
+  font-weight: 700 !important;
 }
 
 .empty-state,

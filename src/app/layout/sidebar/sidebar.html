@@ -1,9 +1,9 @@
 <aside class="sidebar" aria-label="Navegación principal">
   <a class="sidebar__brand" routerLink="/dashboard" aria-label="Ir al inicio de Conexion360">
-    <span class="sidebar__brand-icon">N</span>
+    <img class="sidebar__brand-logo" src="/assets/logo.png" alt="" aria-hidden="true" />
     <span>
       <strong>Conexion360</strong>
-      <small>Visibilidad sin límites</small>
+      <small>Visibilidad total. Decisiones inteligentes.</small>
     </span>
   </a>
 
@@ -22,7 +22,7 @@
   </nav>
 
   <div class="sidebar__user">
-    <span class="sidebar__avatar">{{ session()?.user?.name?.charAt(0) ?? 'N' }}</span>
+    <span class="sidebar__avatar">{{ session()?.user?.name?.charAt(0) ?? 'C' }}</span>
     <span>
       <strong>{{ session()?.user?.name ?? 'Usuario demo' }}</strong>
       <small>{{ roleLabel() }}</small>

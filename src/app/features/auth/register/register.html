@@ -27,9 +27,13 @@
           <p class="register-form__error" role="alert">{{ errorMessage }}</p>
         }
 
-        <button mat-flat-button type="submit" [disabled]="isSubmitting">
-          {{ isSubmitting ? 'Redirigiendo...' : 'Crear cuenta' }}
-        </button>
+        @if (authorizationUrl(); as auth0Url) {
+          <a mat-flat-button class="register-form__continue" [href]="auth0Url">Continuar en Auth0</a>
+        } @else {
+          <button mat-flat-button type="submit" [disabled]="isSubmitting">
+            {{ isSubmitting ? 'Preparando Auth0...' : 'Crear cuenta' }}
+          </button>
+        }
       </form>
     </mat-card-content>
 

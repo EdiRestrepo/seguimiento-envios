@@ -6,7 +6,7 @@
   display: grid;
   gap: 8px;
   color: var(--color-text-muted);
-  font-size: 13px;
+  font-size: var(--font-size-label);
   font-weight: 700;
 }
 
@@ -21,7 +21,7 @@
 
 .shipments-toolbar input:focus {
   border-color: var(--color-primary);
-  box-shadow: 0 0 0 3px var(--color-primary-soft);
+  box-shadow: 0 0 0 3px var(--color-secondary-soft);
 }
 
 .shipments-card {
@@ -41,18 +41,18 @@
   padding: 0 18px;
   border-bottom: 1px solid var(--color-border);
   color: var(--color-text-muted);
-  font-size: 13px;
+  font-size: var(--font-size-label);
 }
 
 .shipments-table__row strong {
-  color: var(--color-primary-strong);
+  color: var(--color-primary);
 }
 
 .shipments-table__row--head {
   min-height: 48px;
   background: var(--color-surface-muted);
   color: var(--color-text-muted);
-  font-size: 12px;
+  font-size: var(--font-size-label);
   font-weight: 800;
 }
 

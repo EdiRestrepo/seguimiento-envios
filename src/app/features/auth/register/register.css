@@ -3,7 +3,7 @@
   min-height: 100vh;
   place-items: center;
   padding: 24px;
-  background: linear-gradient(135deg, #071225 0%, #132252 100%);
+  background: linear-gradient(135deg, var(--color-primary-strong) 0%, var(--color-primary) 100%);
 }
 
 .register-card {
@@ -18,22 +18,27 @@
   margin-top: 20px;
 }
 
-.register-form button {
+.register-form button,
+.register-form__continue {
   min-height: 44px;
-  background: var(--color-primary);
+  background: var(--color-secondary);
+}
+
+.register-form__continue {
+  justify-content: center;
 }
 
 .register-form__error {
   margin: 0;
   padding: 10px 12px;
   border-radius: var(--radius-control);
-  background: var(--color-danger-soft);
-  color: #b91c1c;
-  font-size: 13px;
+  background: var(--color-alert-soft);
+  color: var(--color-alert);
+  font-size: var(--font-size-label);
 }
 
 mat-card-actions a {
-  color: var(--color-primary-strong);
+  color: var(--color-secondary);
   font-weight: 700;
   text-decoration: none;
 }

@@ -434,19 +434,57 @@ Agregar ruta 404 o redirección segura.
 
 ## 12. Diseño visual
 
-Tomar los mockups de Base44 como referencia:
+Tomar los mockups de Base44 como referencia de estructura, jerarquía,
+distribución de información, componentes, flujos y comportamiento visual.
 
-- Fondo principal claro
-- Menú lateral naranja
-- Texto principal azul oscuro
-- Estados y alertas mediante chips
-- Tarjetas blancas
-- Bordes suaves
-- Sombras discretas
-- Espaciado consistente
-- Tablas legibles
-- Diseño empresarial
-- Diseño responsive
+Aunque los mockups tengan otra paleta de colores, de ahora en adelante debe
+respetarse la identidad visual vigente de Conexion360 implementada en
+`src/styles.css`. La paleta vigente prevalece sobre los colores originales de
+los mockups.
+
+Paleta oficial de Conexion360:
+
+- Azul Petróleo `#12355B`: color principal, encabezados destacados, sidebar y
+  elementos de marca.
+- Turquesa `#00B8A9`: color secundario, acciones activas, enlaces, acentos y
+  estados de progreso.
+- Naranja `#F97316`: alertas, novedades, advertencias y llamados de atención.
+- Verde `#22C55E`: estados correctos, entregados, completados o exitosos.
+- Gris Claro `#F8FAFC`: fondo general de la aplicación.
+- Gris Oscuro `#334155`: texto secundario, etiquetas y descripciones.
+- Negro `#0F172A`: texto principal.
+
+La paleta debe mantenerse centralizada mediante variables CSS en
+`src/styles.css`. No codificar colores hexadecimales repetidos en CSS de
+componentes salvo que exista una justificación puntual.
+
+Tipografía oficial:
+
+- Familia: IBM Plex Sans.
+- H1: 40 px.
+- H2: 30 px.
+- H3: 24 px.
+- Texto: 16 px.
+- Etiquetas: 14 px.
+- Botones: 15 px.
+
+La tipografía también debe mantenerse centralizada mediante variables CSS en
+`src/styles.css`.
+
+Lineamientos visuales:
+
+- Fondo principal claro.
+- Menú lateral con identidad azul petróleo y estados activos turquesa.
+- Texto principal en negro `#0F172A`.
+- Texto secundario en gris oscuro `#334155`.
+- Estados y alertas mediante chips.
+- Tarjetas blancas.
+- Bordes suaves.
+- Sombras discretas.
+- Espaciado consistente.
+- Tablas legibles.
+- Diseño empresarial.
+- Diseño responsive.
 
 No copiar textos como “Mockup Auth” en la versión final.
 

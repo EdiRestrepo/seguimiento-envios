@@ -3,7 +3,7 @@
   min-height: 100vh;
   place-items: center;
   padding: 32px;
-  background: linear-gradient(135deg, #071225 0%, #132252 100%);
+  background: linear-gradient(135deg, var(--color-primary-strong) 0%, var(--color-primary) 100%);
 }
 
 .auth-shell {
@@ -20,25 +20,25 @@
   align-content: center;
   gap: 22px;
   padding: 48px 38px;
-  background: #142654;
+  background: var(--color-primary);
   color: #fff;
 }
 
 .auth-shell__brand {
-  color: var(--color-primary);
-  font-size: 18px;
+  color: var(--color-secondary);
+  font-size: var(--font-size-h3);
   font-weight: 900;
 }
 
 .auth-shell h1 {
   margin: 0;
-  font-size: 32px;
+  font-size: var(--font-size-h1);
   line-height: 1.12;
 }
 
 .auth-shell p {
   margin: 0;
-  color: #cbd5e1;
+  color: #dbeafe;
 }
 
 .auth-shell ul {
@@ -61,22 +61,27 @@
   margin-top: 20px;
 }
 
-.auth-form button {
+.auth-form button,
+.auth-form__continue {
   min-height: 44px;
-  background: var(--color-primary);
+  background: var(--color-secondary);
+}
+
+.auth-form__continue {
+  justify-content: center;
 }
 
 .auth-form__error {
   margin: 0;
   padding: 10px 12px;
   border-radius: var(--radius-control);
-  background: var(--color-danger-soft);
-  color: #b91c1c;
-  font-size: 13px;
+  background: var(--color-alert-soft);
+  color: var(--color-alert);
+  font-size: var(--font-size-label);
 }
 
 mat-card-actions a {
-  color: var(--color-primary-strong);
+  color: var(--color-secondary);
   font-weight: 700;
   text-decoration: none;
 }

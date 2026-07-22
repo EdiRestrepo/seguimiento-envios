@@ -23,10 +23,15 @@ export class Register {
 
   protected errorMessage = '';
   protected isSubmitting = false;
+  protected readonly authorizationUrl = this.authSession.authorizationUrl;
   protected readonly form = this.formBuilder.nonNullable.group({
     name: ['', [Validators.required, Validators.minLength(3)]],
     email: ['', [Validators.required, Validators.email]],
   });
+
+  constructor() {
+    this.authSession.clearAuthorizationUrl();
+  }
 
   protected submit(): void {
     if (this.form.invalid || this.isSubmitting) {

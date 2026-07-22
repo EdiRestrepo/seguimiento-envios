@@ -23,9 +23,14 @@ export class Login {
 
   protected errorMessage = '';
   protected isSubmitting = false;
+  protected readonly authorizationUrl = this.authSession.authorizationUrl;
   protected readonly form = this.formBuilder.nonNullable.group({
     email: ['', [Validators.email]],
   });
+
+  constructor() {
+    this.authSession.clearAuthorizationUrl();
+  }
 
   protected submit(): void {
     if (this.form.invalid || this.isSubmitting) {
