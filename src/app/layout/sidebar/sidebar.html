@@ -23,8 +23,8 @@
 
   <div class="sidebar__user">
     <span class="sidebar__avatar">{{ session()?.user?.name?.charAt(0) ?? 'C' }}</span>
-    <span>
-      <strong>{{ session()?.user?.name ?? 'Usuario demo' }}</strong>
+    <span class="sidebar__user-info">
+      <strong [title]="session()?.user?.name ?? 'Usuario demo'">{{ session()?.user?.name ?? 'Usuario demo' }}</strong>
       <small>{{ roleLabel() }}</small>
     </span>
   </div>
