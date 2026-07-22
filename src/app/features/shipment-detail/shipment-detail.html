@@ -1,4 +1,4 @@
-<section class="page">
+﻿<section class="page">
   @if (shipment$ | async; as shipment) {
     <header class="detail-header">
       <a mat-button routerLink="/shipments">Volver</a>
@@ -7,7 +7,7 @@
         <p class="page__subtitle">
           {{ getOperationTypeLabel(shipment.operationType) }} ·
           {{ getTransportModeLabel(shipment.transportMode) }} ·
-          {{ shipment.origin }} → {{ shipment.destination }}
+          {{ getRouteLabel(shipment) }}
         </p>
       </div>
       <span class="status-chip status-chip--info">{{ getShipmentStatusLabel(shipment.status) }}</span>

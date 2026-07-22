@@ -1,4 +1,4 @@
-<section class="page">
+﻿<section class="page">
   <header class="page__header">
     <h1 class="page__title">Envíos internacionales</h1>
     <p class="page__subtitle">Consulta inicial de envíos IMPO / EXPO · AIR / SEA.</p>
@@ -10,7 +10,7 @@
       <input
         type="search"
         [formControl]="searchControl"
-        placeholder="HBL, cliente, origen o destino"
+        placeholder="HBL, AWB, cliente, origen o destino"
         aria-label="Buscar envíos"
       />
     </label>
@@ -55,7 +55,7 @@
                 {{ getOperationTypeLabel(shipment.operationType) }} · {{ getTransportModeLabel(shipment.transportMode) }}
               </span>
               <span role="cell">{{ shipment.client }}</span>
-              <span role="cell">{{ shipment.origin }} → {{ shipment.destination }}</span>
+              <span role="cell">{{ getLocationLabel(shipment) }}</span>
               <span role="cell">{{ shipment.logisticDates.eta ?? 'Sin fecha' }}</span>
               <a role="cell" mat-button [routerLink]="['/shipments', shipment.id]">Abrir</a>
             </div>

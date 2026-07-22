@@ -1,9 +1,10 @@
-import { AsyncPipe } from '@angular/common';
+﻿import { AsyncPipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
 import { map, switchMap } from 'rxjs';
 
+import { Shipment } from '../../core/models/shipment.model';
 import { getOperationTypeLabel, getShipmentStatusLabel, getTransportModeLabel } from '../../core/utils/display-labels';
 import { MockShipmentService } from '../../mocks/services/mock-shipment.service';
 
@@ -20,10 +21,14 @@ export class ShipmentDetail {
 
   protected readonly shipment$ = this.route.paramMap.pipe(
     map((params) => params.get('id') ?? ''),
-    switchMap((id) => this.shipmentService.getShipmentById(id)),
+    switchMap((id) => this.shipmentService.getById(id)),
   );
 
   protected readonly getOperationTypeLabel = getOperationTypeLabel;
   protected readonly getTransportModeLabel = getTransportModeLabel;
   protected readonly getShipmentStatusLabel = getShipmentStatusLabel;
+
+  protected getRouteLabel(shipment: Shipment): string {
+    return `${shipment.origin.country} → ${shipment.destination.country}`;
+  }
 }

@@ -1,20 +1,265 @@
-import { Injectable } from '@angular/core';
-import { delay, Observable, of } from 'rxjs';
+﻿import { Injectable } from '@angular/core';
+import { Observable, delay, map, of, throwError } from 'rxjs';
 
-import { Shipment } from '../../core/models/shipment.model';
+import { PaginatedResult, SearchFilters } from '../../core/models/common.model';
+import {
+  DashboardMetrics,
+  OperationType,
+  ReportMetrics,
+  Shipment,
+  ShipmentEvent,
+  ShipmentStatus,
+  TransportMode,
+} from '../../core/models/shipment.model';
 import { ShipmentDataSource } from '../../core/services/shipment-data-source';
+import { isTerminalShipmentStatus } from '../../core/utils/display-labels';
 import { mockShipments } from '../data/mock-shipments';
+
+export type MockShipmentResponseMode = 'success' | 'empty' | 'error';
+
+export interface MockShipmentSimulationConfig {
+  latencyMs?: number;
+  responseMode?: MockShipmentResponseMode;
+}
+
+const defaultLatencyMs = 350;
+const defaultPage = 1;
+const defaultPageSize = 10;
+const shipmentStatuses: ShipmentStatus[] = [
+  'PENDING',
+  'ORIGIN_WAREHOUSE',
+  'ORIGIN_CUSTOMS',
+  'IN_TRANSIT',
+  'DESTINATION_CUSTOMS',
+  'NATIONALIZED',
+  'DESTINATION_WAREHOUSE',
+  'DISPATCHED',
+  'DELIVERED',
+  'WITH_ISSUE',
+  'CANCELLED',
+];
 
 @Injectable({
   providedIn: 'root',
 })
 export class MockShipmentService implements ShipmentDataSource {
+  private simulationConfig: Required<MockShipmentSimulationConfig> = {
+    latencyMs: defaultLatencyMs,
+    responseMode: 'success',
+  };
+
+  configureSimulation(config: MockShipmentSimulationConfig): void {
+    this.simulationConfig = {
+      ...this.simulationConfig,
+      ...config,
+    };
+  }
+
+  resetSimulation(): void {
+    this.simulationConfig = {
+      latencyMs: defaultLatencyMs,
+      responseMode: 'success',
+    };
+  }
+
+  getAll(): Observable<Shipment[]> {
+    return this.respondWith(mockShipments);
+  }
+
+  getActive(): Observable<Shipment[]> {
+    return this.getAll().pipe(map((shipments) => shipments.filter((shipment) => !isTerminalShipmentStatus(shipment.status))));
+  }
+
+  getDelivered(): Observable<Shipment[]> {
+    return this.getAll().pipe(map((shipments) => shipments.filter((shipment) => shipment.status === 'DELIVERED')));
+  }
+
+  getById(id: string): Observable<Shipment | null> {
+    return this.respondWith(mockShipments.find((shipment) => shipment.id === id) ?? null);
+  }
+
+  search(filters: SearchFilters): Observable<PaginatedResult<Shipment>> {
+    return this.getAll().pipe(map((shipments) => this.paginate(this.filterShipments(shipments, filters), filters)));
+  }
+
+  getRecent(limit: number): Observable<Shipment[]> {
+    return this.getAll().pipe(
+      map((shipments) =>
+        [...shipments]
+          .sort((first, second) => this.getLatestTimestamp(second) - this.getLatestTimestamp(first))
+          .slice(0, Math.max(limit, 0)),
+      ),
+    );
+  }
+
+  getDashboardMetrics(): Observable<DashboardMetrics> {
+    return this.getAll().pipe(map((shipments) => this.calculateDashboardMetrics(shipments)));
+  }
+
+  getReportMetrics(): Observable<ReportMetrics> {
+    return this.getAll().pipe(map((shipments) => this.calculateReportMetrics(shipments)));
+  }
+
+  getEvents(shipmentId: string): Observable<ShipmentEvent[]> {
+    return this.getById(shipmentId).pipe(map((shipment) => shipment?.events ?? []));
+  }
+
   getShipments(): Observable<Shipment[]> {
-    return of(mockShipments).pipe(delay(500));
+    return this.getAll();
   }
 
   getShipmentById(id: string): Observable<Shipment | null> {
-    const shipment = mockShipments.find((item) => item.id === id) ?? null;
-    return of(shipment).pipe(delay(350));
+    return this.getById(id);
+  }
+
+  private respondWith<T>(value: T): Observable<T> {
+    if (this.simulationConfig.responseMode === 'error') {
+      return throwError(() => new Error('Error simulado al consultar envíos')).pipe(delay(this.simulationConfig.latencyMs));
+    }
+
+    if (this.simulationConfig.responseMode === 'empty') {
+      return of(this.emptyValue(value)).pipe(delay(this.simulationConfig.latencyMs));
+    }
+
+    return of(value).pipe(delay(this.simulationConfig.latencyMs));
+  }
+
+  private emptyValue<T>(value: T): T {
+    if (Array.isArray(value)) {
+      return [] as T;
+    }
+
+    return null as T;
+  }
+
+  private filterShipments(shipments: Shipment[], filters: SearchFilters): Shipment[] {
+    const normalizedQuery = filters.query?.trim().toLowerCase() ?? '';
+
+    return shipments.filter((shipment) => {
+      const matchesQuery = normalizedQuery ? this.getSearchableText(shipment).includes(normalizedQuery) : true;
+      const matchesOperation = filters.operationType ? shipment.operationType === filters.operationType : true;
+      const matchesMode = filters.transportMode ? shipment.transportMode === filters.transportMode : true;
+      const matchesStatus = filters.status ? shipment.status === filters.status : true;
+      const matchesClient = filters.client ? shipment.client === filters.client : true;
+
+      return matchesQuery && matchesOperation && matchesMode && matchesStatus && matchesClient;
+    });
+  }
+
+  private paginate(shipments: Shipment[], filters: SearchFilters): PaginatedResult<Shipment> {
+    const page = Math.max(filters.page ?? defaultPage, 1);
+    const pageSize = Math.max(filters.pageSize ?? defaultPageSize, 1);
+    const start = (page - 1) * pageSize;
+    const items = shipments.slice(start, start + pageSize);
+
+    return {
+      items,
+      page,
+      pageSize,
+      totalItems: shipments.length,
+      totalPages: Math.ceil(shipments.length / pageSize),
+    };
+  }
+
+  private getSearchableText(shipment: Shipment): string {
+    return [
+      shipment.documentNumber,
+      shipment.client,
+      shipment.provider,
+      shipment.origin.country,
+      shipment.origin.city,
+      shipment.destination.country,
+      shipment.destination.city,
+      shipment.status,
+      shipment.operationType,
+      shipment.transportMode,
+      shipment.merchandiseDescription,
+    ]
+      .filter((value): value is string => Boolean(value))
+      .join(' ')
+      .toLowerCase();
+  }
+
+  private calculateDashboardMetrics(shipments: Shipment[]): DashboardMetrics {
+    return {
+      totalShipments: shipments.length,
+      totalImports: shipments.filter((shipment) => shipment.operationType === 'IMPO').length,
+      totalExports: shipments.filter((shipment) => shipment.operationType === 'EXPO').length,
+      totalAir: shipments.filter((shipment) => shipment.transportMode === 'AIR').length,
+      totalSea: shipments.filter((shipment) => shipment.transportMode === 'SEA').length,
+      totalDelivered: shipments.filter((shipment) => shipment.status === 'DELIVERED').length,
+      totalWithIssue: shipments.filter((shipment) => shipment.status === 'WITH_ISSUE').length,
+      totalActive: shipments.filter((shipment) => !isTerminalShipmentStatus(shipment.status)).length,
+      totalPending: shipments.filter((shipment) => shipment.status === 'PENDING').length,
+    };
+  }
+
+  private calculateReportMetrics(shipments: Shipment[]): ReportMetrics {
+    const dashboardMetrics = this.calculateDashboardMetrics(shipments);
+    const totalProgress = shipments.reduce((sum, shipment) => sum + shipment.progress, 0);
+
+    return {
+      ...dashboardMetrics,
+      totalBilledUsd: this.roundCurrency(
+        shipments.reduce((sum, shipment) => sum + (shipment.financialInfo.invoice?.total ?? 0), 0),
+      ),
+      totalAdvancesUsd: this.roundCurrency(
+        shipments.reduce((sum, shipment) => sum + (shipment.financialInfo.advancePayment?.amount ?? 0), 0),
+      ),
+      totalDelayUsd: this.roundCurrency(
+        shipments.reduce((sum, shipment) => sum + (shipment.container?.totalDelayValue ?? 0), 0),
+      ),
+      averageProgress: shipments.length ? Math.round(totalProgress / shipments.length) : 0,
+      byOperationType: this.countByOperation(shipments),
+      byTransportMode: this.countByTransportMode(shipments),
+      byStatus: this.countByStatus(shipments),
+      topClients: this.getTopClients(shipments),
+    };
+  }
+
+  private countByOperation(shipments: Shipment[]): Record<OperationType, number> {
+    return {
+      IMPO: shipments.filter((shipment) => shipment.operationType === 'IMPO').length,
+      EXPO: shipments.filter((shipment) => shipment.operationType === 'EXPO').length,
+    };
+  }
+
+  private countByTransportMode(shipments: Shipment[]): Record<TransportMode, number> {
+    return {
+      AIR: shipments.filter((shipment) => shipment.transportMode === 'AIR').length,
+      SEA: shipments.filter((shipment) => shipment.transportMode === 'SEA').length,
+    };
+  }
+
+  private countByStatus(shipments: Shipment[]): Record<ShipmentStatus, number> {
+    return shipmentStatuses.reduce(
+      (result, status) => ({
+        ...result,
+        [status]: shipments.filter((shipment) => shipment.status === status).length,
+      }),
+      {} as Record<ShipmentStatus, number>,
+    );
+  }
+
+  private getTopClients(shipments: Shipment[]): { client: string; total: number }[] {
+    const totals = shipments.reduce<Record<string, number>>((result, shipment) => {
+      result[shipment.client] = (result[shipment.client] ?? 0) + 1;
+      return result;
+    }, {});
+
+    return Object.entries(totals)
+      .map(([client, total]) => ({ client, total }))
+      .sort((first, second) => second.total - first.total || first.client.localeCompare(second.client))
+      .slice(0, 5);
+  }
+
+  private getLatestTimestamp(shipment: Shipment): number {
+    const latestEvent = shipment.events.at(-1);
+    const value = latestEvent?.dateTime ?? shipment.logisticDates.etd ?? '1970-01-01T00:00:00.000Z';
+    return new Date(value).getTime();
+  }
+
+  private roundCurrency(value: number): number {
+    return Number(value.toFixed(2));
   }
 }

@@ -1,6 +1,8 @@
-export type OperationType = 'IMPO' | 'EXPO';
+﻿export type OperationType = 'IMPO' | 'EXPO';
 
 export type TransportMode = 'AIR' | 'SEA';
+
+export type CargoType = 'FCL' | 'LCL';
 
 export type ShipmentStatus =
   | 'PENDING'
@@ -14,6 +16,16 @@ export type ShipmentStatus =
   | 'DELIVERED'
   | 'WITH_ISSUE'
   | 'CANCELLED';
+
+export type ShipmentDocumentStatus = 'PENDING' | 'AVAILABLE' | 'REJECTED';
+
+export type ShipmentIssueType = 'DELAY' | 'CUSTOMS_INSPECTION' | 'DOCUMENT_PENDING' | 'WEATHER' | 'NONE';
+
+export interface Location {
+  country: string;
+  city?: string | null;
+  terminal?: string | null;
+}
 
 export interface LogisticDates {
   originWarehouse?: string | null;
@@ -29,45 +41,61 @@ export interface LogisticDates {
 }
 
 export interface Container {
-  type?: string | null;
-  quantity?: number | null;
-  number?: string | null;
-  freeDays?: number | null;
-  remainingDays?: number | null;
-  returnDate?: string | null;
-  delayDays?: number | null;
-  delayValuePerDay?: number | null;
-  totalDelayValue?: number | null;
-  deposit?: string | null;
+  type: string | null;
+  quantity: number;
+  number: string | null;
+  freeDays: number | null;
+  remainingDays: number | null;
+  returnDate: string | null;
+  delayDays: number;
+  delayValuePerDay: number;
+  totalDelayValue: number;
+  deposit: string | null;
+}
+
+export interface AdvancePayment {
+  requestedAt: string | null;
+  paidAt: string | null;
+  amount: number;
+}
+
+export interface Invoice {
+  providerInvoice: string | null;
+  tccInvoice: string | null;
+  invoiceNumber: string | null;
+  invoiceDate: string | null;
+  expenseDescription: string | null;
+  expenseValue: number;
+  subtotal: number;
+  tax: number;
+  total: number;
 }
 
 export interface ShipmentFinancialInfo {
-  advanceRequestedAt?: string | null;
-  advancePaidAt?: string | null;
-  advanceAmount?: number | null;
-  providerInvoice?: string | null;
-  tccInvoice?: string | null;
-  invoiceNumber?: string | null;
-  invoiceDate?: string | null;
-  expenseDescription?: string | null;
-  subtotal?: number | null;
-  tax?: number | null;
-  total?: number | null;
+  advancePayment: AdvancePayment | null;
+  invoice: Invoice | null;
 }
 
 export interface ShipmentDocument {
   id: string;
   type: string;
   name: string;
+  date: string | null;
+  status: ShipmentDocumentStatus;
+}
+
+export interface ShipmentIssue {
+  type: ShipmentIssueType;
+  comment: string;
   date: string;
-  status: 'PENDING' | 'AVAILABLE' | 'REJECTED';
+  resolved: boolean;
 }
 
 export interface ShipmentEvent {
   id: string;
   dateTime: string;
   status: ShipmentStatus;
-  location: string;
+  location: Location;
   description: string;
   source: string;
 }
@@ -80,17 +108,44 @@ export interface Shipment {
   status: ShipmentStatus;
   client: string;
   provider: string;
-  origin: string;
-  destination: string;
+  incoterm: string;
+  origin: Location;
+  destination: Location;
   merchandiseDescription: string;
-  cargoType: 'FCL' | 'LCL';
+  cargoType: CargoType;
+  packages: number;
+  weightKg: number;
+  volumeM3: number;
   carrier: string;
   logisticDates: LogisticDates;
   container?: Container | null;
-  financialInfo?: ShipmentFinancialInfo | null;
+  financialInfo: ShipmentFinancialInfo;
   documents: ShipmentDocument[];
   events: ShipmentEvent[];
-  issueComment?: string | null;
+  issue?: ShipmentIssue | null;
   progress: number;
   nextStop?: string | null;
+}
+
+export interface DashboardMetrics {
+  totalShipments: number;
+  totalImports: number;
+  totalExports: number;
+  totalAir: number;
+  totalSea: number;
+  totalDelivered: number;
+  totalWithIssue: number;
+  totalActive: number;
+  totalPending: number;
+}
+
+export interface ReportMetrics extends DashboardMetrics {
+  totalBilledUsd: number;
+  totalAdvancesUsd: number;
+  totalDelayUsd: number;
+  averageProgress: number;
+  byOperationType: Record<OperationType, number>;
+  byTransportMode: Record<TransportMode, number>;
+  byStatus: Record<ShipmentStatus, number>;
+  topClients: { client: string; total: number }[];
 }
