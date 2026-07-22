@@ -1,26 +1,29 @@
 import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
+import { RouterLink, RouterLinkActive } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 
 import { AuthSession } from '../../core/models/auth-session.model';
+import { layoutNavItems } from '../layout-navigation';
 import { UserMenu } from '../user-menu/user-menu';
 
 @Component({
-  selector: 'app-header',
-  imports: [MatButtonModule, MatIconModule, UserMenu],
-  templateUrl: './header.html',
-  styleUrl: './header.css',
+  selector: 'app-mobile-navigation',
+  imports: [MatButtonModule, MatIconModule, RouterLink, RouterLinkActive, UserMenu],
+  templateUrl: './mobile-navigation.html',
+  styleUrl: './mobile-navigation.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class Header {
+export class MobileNavigation {
+  readonly open = input(false);
   readonly session = input<AuthSession | null>(null);
-  readonly loading = input(false);
-  readonly hasError = input(false);
-  readonly menuToggle = output<void>();
+  readonly close = output<void>();
   readonly logout = output<void>();
 
-  protected toggleMenu(): void {
-    this.menuToggle.emit();
+  protected readonly navItems = layoutNavItems;
+
+  protected closeNavigation(): void {
+    this.close.emit();
   }
 
   protected onLogout(): void {

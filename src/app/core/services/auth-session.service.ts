@@ -36,6 +36,7 @@ export class AuthSessionService {
                 email: identity.email,
                 role: profile?.role ?? 'CLIENT',
                 company: profile?.company,
+                picture: profile?.picture ?? identity.picture ?? null,
               },
               accessToken: '',
               expiresAt: new Date(Date.now() + 1000 * 60 * 60 * 8).toISOString(),

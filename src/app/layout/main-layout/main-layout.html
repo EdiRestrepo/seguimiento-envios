@@ -1,9 +1,22 @@
 <div class="shell">
-  <app-sidebar />
+  <app-sidebar class="shell__sidebar" [session]="session()" (logout)="logout()" />
   <div class="shell__body">
-    <app-header />
+    <app-header
+      [session]="session()"
+      [loading]="(isLoading$ | async) ?? false"
+      [hasError]="(authError$ | async) !== null"
+      (menuToggle)="openMobileNavigation()"
+      (logout)="logout()"
+    />
     <main class="shell__content" tabindex="-1">
       <router-outlet />
     </main>
   </div>
+
+  <app-mobile-navigation
+    [open]="mobileNavigationOpen()"
+    [session]="session()"
+    (close)="closeMobileNavigation()"
+    (logout)="logout()"
+  />
 </div>

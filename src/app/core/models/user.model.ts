@@ -6,4 +6,5 @@ export interface User {
   email: string;
   role: UserRole;
   company?: string;
+  picture?: string | null;
 }

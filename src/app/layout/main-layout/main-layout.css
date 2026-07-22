@@ -3,12 +3,17 @@
   background: var(--color-background);
 }
 
+.shell__sidebar {
+  display: none;
+}
+
 .shell__body {
   min-width: 0;
 }
 
 .shell__content {
   padding: 28px;
+  overflow-x: clip;
 }
 
 @media (min-width: 900px) {
@@ -16,10 +21,14 @@
     display: grid;
     grid-template-columns: var(--sidebar-width) minmax(0, 1fr);
   }
+
+  .shell__sidebar {
+    display: block;
+  }
 }
 
 @media (max-width: 899px) {
   .shell__content {
-    padding: 20px 16px 88px;
+    padding: 20px 16px 32px;
   }
 }

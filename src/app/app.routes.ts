@@ -58,6 +58,34 @@ export const routes: Routes = [
       {
         path: 'settings',
         loadComponent: () => import('./features/settings/settings').then((m) => m.Settings),
+        children: [
+          {
+            path: '',
+            pathMatch: 'full',
+            redirectTo: 'notifications',
+          },
+          {
+            path: 'notifications',
+            loadComponent: () =>
+              import('./features/settings/settings-notifications/settings-notifications').then(
+                (m) => m.SettingsNotifications,
+              ),
+          },
+          {
+            path: 'users',
+            data: { roles: ['ADMIN'] },
+            loadComponent: () =>
+              import('./features/settings/settings-users/settings-users').then((m) => m.SettingsUsers),
+          },
+          {
+            path: 'master-data',
+            data: { roles: ['ADMIN', 'OPERATOR'] },
+            loadComponent: () =>
+              import('./features/settings/settings-master-data/settings-master-data').then(
+                (m) => m.SettingsMasterData,
+              ),
+          },
+        ],
       },
     ],
   },

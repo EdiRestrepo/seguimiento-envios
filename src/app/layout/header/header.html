@@ -1,11 +1,21 @@
-<header class="header">
-  <div>
+﻿<header class="header">
+  <button mat-icon-button class="header__menu-button" type="button" aria-label="Abrir navegación" (click)="toggleMenu()">
+    <mat-icon aria-hidden="true">menu</mat-icon>
+  </button>
+
+  <div class="header__title">
     <p class="header__eyebrow">Plataforma logística</p>
     <strong>Conexion360</strong>
+    @if (loading()) {
+      <small>Cargando usuario...</small>
+    } @else if (hasError()) {
+      <small>No fue posible recuperar el perfil.</small>
+    } @else if (!session()) {
+      <small>Perfil incompleto</small>
+    }
   </div>
 
   <div class="header__actions">
-    <span class="header__user">{{ session()?.user?.email ?? 'sesion@demo.com' }}</span>
-    <button mat-stroked-button type="button" (click)="logout()">Cerrar sesión</button>
+    <app-user-menu [session]="session()" [compact]="true" (logout)="onLogout()" />
   </div>
 </header>

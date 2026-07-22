@@ -1,0 +1,19 @@
+﻿.settings-placeholder {
+  display: grid;
+  gap: 8px;
+  padding: 24px;
+}
+
+.settings-placeholder h2,
+.settings-placeholder p {
+  margin: 0;
+}
+
+.settings-placeholder h2 {
+  color: var(--color-text);
+  font-size: var(--font-size-h3);
+}
+
+.settings-placeholder p {
+  color: var(--color-text-muted);
+}

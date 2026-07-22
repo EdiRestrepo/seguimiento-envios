@@ -1,37 +1,25 @@
-import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
+﻿import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
+import { MatIconModule } from '@angular/material/icon';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 
-import { AuthSessionService } from '../../core/services/auth-session.service';
-import { getUserRoleLabel } from '../../core/utils/display-labels';
-
-interface NavItem {
-  label: string;
-  route: string;
-  icon: string;
-}
+import { AuthSession } from '../../core/models/auth-session.model';
+import { layoutNavItems } from '../layout-navigation';
+import { UserMenu } from '../user-menu/user-menu';
 
 @Component({
   selector: 'app-sidebar',
-  imports: [RouterLink, RouterLinkActive],
+  imports: [MatIconModule, RouterLink, RouterLinkActive, UserMenu],
   templateUrl: './sidebar.html',
   styleUrl: './sidebar.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class Sidebar {
-  private readonly authSession = inject(AuthSessionService);
+  readonly session = input<AuthSession | null>(null);
+  readonly logout = output<void>();
 
-  protected readonly session = this.authSession.currentSession;
-  protected readonly roleLabel = computed(() => {
-    const session = this.session();
-    return session ? getUserRoleLabel(session.user.role) : 'Invitado';
-  });
+  protected readonly navItems = layoutNavItems;
 
-  protected readonly navItems: NavItem[] = [
-    { label: 'Inicio', route: '/dashboard', icon: '🌐' },
-    { label: 'Mis Envíos', route: '/shipments', icon: '📦' },
-    { label: 'Historial', route: '/history', icon: '🕒' },
-    { label: 'Notificaciones', route: '/notifications', icon: '🔔' },
-    { label: 'Reportes', route: '/reports', icon: '📈' },
-    { label: 'Ajustes', route: '/settings', icon: '⚙' },
-  ];
+  protected onLogout(): void {
+    this.logout.emit();
+  }
 }

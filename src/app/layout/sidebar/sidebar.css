@@ -1,4 +1,4 @@
-.sidebar {
+﻿.sidebar {
   display: flex;
   min-height: 100vh;
   flex-direction: column;
@@ -13,7 +13,13 @@
   min-height: 112px;
   padding: 18px 16px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.16);
+  color: #fff;
   text-decoration: none;
+}
+
+.sidebar__brand:focus-visible {
+  outline: 3px solid rgba(255, 255, 255, 0.72);
+  outline-offset: -6px;
 }
 
 .sidebar__brand-logo {
@@ -21,20 +27,9 @@
   height: 64px;
   flex: 0 0 64px;
   padding: 6px;
-  border-radius: 16px;
+  border-radius: var(--radius-control);
   background: #fff;
   object-fit: contain;
-}
-
-.sidebar__avatar {
-  display: grid;
-  width: 36px;
-  height: 36px;
-  flex: 0 0 36px;
-  place-items: center;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.18);
-  font-weight: 800;
 }
 
 .sidebar strong {
@@ -69,69 +64,31 @@
   text-decoration: none;
 }
 
+.sidebar__link:focus-visible {
+  outline: 3px solid rgba(255, 255, 255, 0.72);
+  outline-offset: 2px;
+}
+
 .sidebar__link--active,
 .sidebar__link:hover {
   background: var(--color-sidebar-active);
   box-shadow: 0 8px 22px rgba(0, 184, 169, 0.26);
 }
 
-.sidebar__link span {
-  display: inline-grid;
+.sidebar__link mat-icon {
   width: 22px;
-  place-items: center;
-  font-size: 18px;
+  height: 22px;
+  font-size: 22px;
 }
 
 .sidebar__user {
-  display: flex;
-  align-items: center;
-  gap: 12px;
   margin-top: auto;
   padding: 18px 20px;
   border-top: 1px solid rgba(255, 255, 255, 0.16);
 }
 
-.sidebar__user-info {
-  min-width: 0;
-  flex: 1;
-}
-
-.sidebar__user-info strong,
-.sidebar__user-info small {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
 @media (max-width: 899px) {
   .sidebar {
-    position: fixed;
-    right: 0;
-    bottom: 0;
-    left: 0;
-    z-index: 10;
-    min-height: auto;
-  }
-
-  .sidebar__brand,
-  .sidebar__user {
     display: none;
-  }
-
-  .sidebar__nav {
-    display: flex;
-    gap: 4px;
-    justify-content: space-around;
-    padding: 8px;
-  }
-
-  .sidebar__link {
-    min-height: 58px;
-    flex: 1;
-    flex-direction: column;
-    gap: 4px;
-    justify-content: center;
-    padding: 6px;
-    font-size: 11px;
   }
 }
