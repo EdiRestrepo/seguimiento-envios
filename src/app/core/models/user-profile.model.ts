@@ -1,0 +1,38 @@
+import { UserRole } from './user.model';
+
+export interface NotificationPreference {
+  email: boolean;
+  shipmentStatusChanges: boolean;
+  delays: boolean;
+}
+
+export interface Auth0Identity {
+  auth0UserId: string;
+  email: string;
+  name?: string;
+  nickname?: string;
+  picture?: string;
+}
+
+export interface PendingUserProfile {
+  fullName: string;
+  company: string;
+  email: string;
+  phone?: string | null;
+  acceptedDataPolicy: true;
+  createdAt: string;
+}
+
+export interface UserProfile {
+  auth0UserId: string;
+  fullName: string;
+  company: string;
+  email: string;
+  phone?: string | null;
+  picture?: string | null;
+  role: UserRole;
+  profileCompleted: boolean;
+  notificationPreferences: NotificationPreference;
+  acceptedDataPolicyAt: string;
+  createdAt: string;
+}

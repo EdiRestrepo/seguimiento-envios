@@ -28,6 +28,11 @@ export const routes: Routes = [
         loadComponent: () => import('./features/dashboard/dashboard').then((m) => m.Dashboard),
       },
       {
+        path: 'complete-profile',
+        loadComponent: () =>
+          import('./features/auth/complete-profile/complete-profile').then((m) => m.CompleteProfile),
+      },
+      {
         path: 'shipments',
         loadComponent: () =>
           import('./features/shipments/shipment-list/shipment-list').then((m) => m.ShipmentList),

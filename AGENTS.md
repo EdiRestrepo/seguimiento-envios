@@ -330,7 +330,7 @@ Todo acceso a datos debe realizarse mediante servicios.
 
 Definir contratos o abstracciones como:
 
-- AuthDataSource
+- UserProfileDataSource
 - ShipmentDataSource
 - NotificationDataSource
 - ReportDataSource
@@ -338,7 +338,8 @@ Definir contratos o abstracciones como:
 
 Implementar inicialmente:
 
-- MockAuthService
+- Auth0FacadeService
+- MockUserProfileService
 - MockShipmentService
 - MockNotificationService
 - MockReportService
@@ -384,34 +385,168 @@ Los datos deben incluir casos variados:
 Los indicadores del dashboard y reportes deben calcularse desde los datos mock,
 no escribirse como valores fijos en el HTML.
 
-## 10. Autenticación simulada
+## 10. Autenticación con Auth0 y perfil simulado
 
-Implementar autenticación mock con almacenamiento local.
+La aplicación utiliza Auth0 como proveedor externo de identidad.
 
-Usuarios iniciales:
+Auth0 gestiona actualmente:
 
-- cliente@demo.com
-- operador@demo.com
-- administrador@demo.com
+- Inicio de sesión
+- Registro de credenciales
+- Correo electrónico
+- Contraseña
+- Recuperación de contraseña
+- Verificación de correo
+- Sesión de autenticación
+- Cierre de sesión
+- Identidad básica del usuario
 
-Roles:
+En esta etapa todavía no existe una integración con el backend propio en
+C# .NET 8 ni una persistencia real en PostgreSQL para los datos internos de
+la aplicación.
+
+Por este motivo, debe diferenciarse entre:
+
+### Identidad y autenticación
+
+Son administradas por Auth0.
+
+Angular no debe:
+
+- Almacenar contraseñas
+- Validar contraseñas localmente
+- Crear una sesión paralela
+- Crear tokens propios
+- Persistir secretos
+- Reemplazar Auth0 con autenticación mock
+
+### Perfil complementario de Conexion360
+
+Mientras no exista backend, los datos propios de la aplicación se gestionarán
+de forma simulada en el frontend.
+
+Datos complementarios:
+
+- Identificador de Auth0
+- Nombre completo
+- Empresa
+- Correo electrónico
+- Teléfono
+- Rol
+- Estado del perfil
+- Preferencias de notificación
+- Fecha de creación simulada
+
+Roles iniciales:
 
 - CLIENT
 - OPERATOR
 - ADMIN
 
-La contraseña puede ser:
+El perfil complementario podrá mantenerse temporalmente mediante un servicio
+mock y almacenamiento local controlado.
 
-Demo1234
+Este almacenamiento es únicamente para fines de desarrollo y prototipo.
+
+No debe incluir:
+
+- Contraseñas
+- Tokens de Auth0
+- Refresh tokens
+- Client secret
+- Información sensible innecesaria
+
+## Servicios de autenticación y perfil
+
+La arquitectura debe separar las responsabilidades:
+
+- Auth0FacadeService:
+  encapsula el inicio de sesión, registro, logout, estado de autenticación y
+  lectura de la identidad básica proporcionada por Auth0.
+
+- UserProfileDataSource:
+  contrato para consultar y actualizar los datos complementarios del usuario.
+
+- MockUserProfileService:
+  implementación temporal del perfil mientras no exista backend.
+
+En el futuro, MockUserProfileService será reemplazado por:
+
+- ApiUserProfileService
+
+Este servicio consumirá una API REST desarrollada en C# .NET 8 y almacenará
+los perfiles en PostgreSQL.
+
+Los componentes no deben depender directamente de localStorage ni del SDK de
+Auth0. Deben consumir servicios o fachadas.
+
+## Flujo temporal de registro
+
+1. El usuario completa en Angular:
+   - nombre completo
+   - empresa
+   - correo electrónico
+   - teléfono
+   - aceptación de tratamiento de datos
+
+2. Angular valida únicamente los datos complementarios.
+
+3. La aplicación redirige al registro de Auth0.
+
+4. Auth0 solicita y administra:
+   - correo
+   - contraseña
+   - verificación
+   - recuperación de acceso
+
+5. Al regresar a Angular, la aplicación obtiene la identidad autenticada.
+
+6. Angular asocia esa identidad con el perfil complementario simulado.
+
+7. El usuario accede al dashboard.
+
+Cuando el backend esté disponible, el paso 6 deberá realizarse mediante una
+API REST.
+
+## Rutas y protección
 
 Requisitos:
 
-- Guard para rutas privadas
-- Guard o control para rutas por rol
-- Persistencia simulada de sesión
-- Cierre de sesión
-- Redirección a login
-- No almacenar contraseñas reales
+- Rutas privadas protegidas mediante el estado de autenticación de Auth0
+- Control de acceso por rol basado temporalmente en el perfil simulado
+- Cierre de sesión mediante Auth0
+- Redirección segura después del login
+- Manejo de callback
+- Manejo de errores
+- Ruta para perfil incompleto
+- No confiar únicamente en ocultar elementos visuales para controlar permisos
+
+## Usuarios y roles simulados
+
+No crear usuarios con contraseña dentro de Angular.
+
+Los roles pueden asignarse temporalmente en el perfil simulado para validar
+las funcionalidades:
+
+- CLIENT
+- OPERATOR
+- ADMIN
+
+La simulación de roles no reemplaza la autenticación de Auth0.
+
+## Seguridad
+
+No se debe:
+
+- Almacenar contraseñas
+- Guardar tokens manualmente
+- Imprimir tokens en consola
+- Exponer secretos
+- Crear autenticación paralela
+- Conectar Angular directamente a PostgreSQL
+- Confiar en localStorage como mecanismo definitivo de seguridad
+
+La autorización real deberá validarse posteriormente también en el backend.
 
 ## 11. Rutas iniciales
 
