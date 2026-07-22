@@ -1,11 +1,150 @@
-<section class="page">
-  <header class="page__header">
-    <h1 class="page__title">Inicio</h1>
-    <p class="page__subtitle">Resumen inicial de envíos internacionales en Conexion360.</p>
+﻿<section class="dashboard-page">
+  <header class="dashboard-hero">
+    <div class="dashboard-hero__copy">
+      <h1>{{ greeting() }}</h1>
+      <p>Resumen de envíos internacionales</p>
+    </div>
+
+    <form class="dashboard-search" (ngSubmit)="searchShipment()" role="search" aria-label="Buscar envío por documento de transporte">
+      <mat-icon aria-hidden="true">search</mat-icon>
+      <label class="dashboard-search__field">
+        <span>Documento de transporte</span>
+        <input
+          type="search"
+          [formControl]="searchControl"
+          placeholder="Ingrese HBL, AWB, MBL o documento"
+          aria-describedby="dashboard-search-message"
+        />
+      </label>
+      <button mat-flat-button type="submit">Buscar</button>
+    </form>
   </header>
 
-  <div class="surface-card placeholder">
-    <strong>Dashboard base</strong>
-    <p>Los indicadores calculados desde datos mock se implementarán en la siguiente fase.</p>
-  </div>
+  @if (searchMessage()) {
+    <p id="dashboard-search-message" class="dashboard-message" role="status">{{ searchMessage() }}</p>
+  } @else {
+    <span id="dashboard-search-message" class="sr-only">Ingrese un documento para consultar envíos.</span>
+  }
+
+  @if (viewModel$ | async; as viewModel) {
+    @if (viewModel.state === 'loading') {
+      <div class="surface-card loading-state">
+        <strong>Cargando dashboard...</strong>
+        <p>Calculando indicadores desde datos simulados.</p>
+      </div>
+    } @else if (viewModel.state === 'error') {
+      <div class="surface-card error-state">
+        <strong>No se pudo cargar el dashboard</strong>
+        <p>{{ viewModel.message }}</p>
+        <button mat-stroked-button type="button" (click)="retry()">Reintentar</button>
+      </div>
+    } @else if (viewModel.state === 'empty') {
+      <div class="surface-card empty-state">
+        <strong>Sin información disponible</strong>
+        <p>{{ viewModel.message }}</p>
+        <button mat-stroked-button type="button" (click)="retry()">Reintentar</button>
+      </div>
+    } @else {
+      <section class="dashboard-cards" aria-label="Indicadores principales">
+        @for (card of viewModel.cards; track card.label) {
+          <article class="metric-card" [class]="'metric-card metric-card--' + card.tone">
+            <span class="metric-card__icon" aria-hidden="true">
+              <mat-icon>{{ card.icon }}</mat-icon>
+            </span>
+            <div>
+              <p>{{ card.label }}</p>
+              <strong>{{ card.value }}</strong>
+              <small>{{ card.detail }}</small>
+            </div>
+          </article>
+        }
+      </section>
+
+      <section class="dashboard-grid">
+        <article class="surface-card distribution-card">
+          <header>
+            <h2>Distribución por operación</h2>
+            <p>IMPO frente a EXPO</p>
+          </header>
+
+          @for (item of viewModel.operationDistribution; track item.label) {
+            <div class="distribution-row">
+              <div class="distribution-row__label">
+                <span>{{ item.label }}</span>
+                <strong>{{ item.count }}</strong>
+              </div>
+              <div
+                class="distribution-row__bar"
+                role="progressbar"
+                [attr.aria-valuenow]="item.percentage"
+                aria-valuemin="0"
+                aria-valuemax="100"
+                [attr.aria-label]="item.label + ': ' + item.count + ' envíos, ' + item.percentage + '%'"
+              >
+                <span [style.width.%]="item.percentage"></span>
+              </div>
+              <p>{{ item.percentage }}% del total de envíos.</p>
+            </div>
+          }
+        </article>
+
+        <article class="surface-card distribution-card">
+          <header>
+            <h2>Modalidad de transporte</h2>
+            <p>AIR frente a SEA</p>
+          </header>
+
+          @for (item of viewModel.modeDistribution; track item.label) {
+            <div class="distribution-row">
+              <div class="distribution-row__label">
+                <span>{{ item.label }}</span>
+                <strong>{{ item.count }}</strong>
+              </div>
+              <div
+                class="distribution-row__bar"
+                role="progressbar"
+                [attr.aria-valuenow]="item.percentage"
+                aria-valuemin="0"
+                aria-valuemax="100"
+                [attr.aria-label]="item.label + ': ' + item.count + ' envíos, ' + item.percentage + '%'"
+              >
+                <span [style.width.%]="item.percentage"></span>
+              </div>
+              <p>{{ item.percentage }}% del total de envíos.</p>
+            </div>
+          }
+        </article>
+      </section>
+
+      <section class="surface-card recent-card" aria-labelledby="recent-title">
+        <header class="recent-card__header">
+          <div>
+            <h2 id="recent-title">Envíos recientes</h2>
+            <p>Últimos movimientos registrados en la fuente simulada.</p>
+          </div>
+          <a mat-button routerLink="/shipments">Ver todos</a>
+        </header>
+
+        <div class="recent-list">
+          @for (shipment of viewModel.recentShipments; track shipment.id) {
+            <a class="recent-item" [routerLink]="['/shipments', shipment.id]">
+              <span class="recent-item__icon" aria-hidden="true">
+                <mat-icon>{{ getTransportModeIcon(shipment.transportMode) }}</mat-icon>
+              </span>
+              <span class="recent-item__main">
+                <strong>{{ shipment.documentNumber }}</strong>
+                <small>{{ getRouteLabel(shipment) }}</small>
+              </span>
+              <span class="status-chip" [class.status-chip--issue]="shipment.status === 'WITH_ISSUE'">
+                {{ getShipmentStatusLabel(shipment.status) }}
+              </span>
+              <span class="recent-item__meta">
+                {{ getOperationTypeLabel(shipment.operationType) }} · {{ getTransportModeLabel(shipment.transportMode) }}
+              </span>
+            </a>
+          }
+        </div>
+      </section>
+    }
+  }
 </section>
