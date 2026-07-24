@@ -1,26 +1,227 @@
-﻿<section class="page">
-  @if (shipment$ | async; as shipment) {
-    <header class="detail-header">
-      <a mat-button routerLink="/shipments">Volver</a>
-      <div>
-        <h1 class="page__title">{{ shipment.documentNumber }}</h1>
-        <p class="page__subtitle">
-          {{ getOperationTypeLabel(shipment.operationType) }} ·
-          {{ getTransportModeLabel(shipment.transportMode) }} ·
-          {{ getRouteLabel(shipment) }}
-        </p>
+﻿<section class="page detail-page">
+  @if (viewModel$ | async; as viewModel) {
+    @if (viewModel.state === 'loading') {
+      <div class="surface-card loading-state">
+        <strong>Cargando detalle...</strong>
+        <p>Consultando información simulada del envío.</p>
       </div>
-      <span class="status-chip status-chip--info">{{ getShipmentStatusLabel(shipment.status) }}</span>
-    </header>
+    } @else if (viewModel.state === 'error') {
+      <div class="surface-card error-state">
+        <strong>No se pudo cargar el detalle</strong>
+        <p>{{ viewModel.message }}</p>
+        <button mat-stroked-button type="button" (click)="retry()">Reintentar</button>
+      </div>
+    } @else if (viewModel.state === 'not-found') {
+      <div class="surface-card empty-state">
+        <strong>Envío no encontrado</strong>
+        <p>{{ viewModel.message }}</p>
+        <button mat-stroked-button type="button" (click)="goBack(viewModel.listQueryParams)">Volver a Mis envíos</button>
+      </div>
+    } @else if (viewModel.shipment; as shipment) {
+      <header class="surface-card detail-header">
+        <div class="detail-header__top">
+          <button mat-stroked-button type="button" (click)="goBack(viewModel.listQueryParams)">
+            <mat-icon aria-hidden="true">arrow_back</mat-icon>
+            Volver
+          </button>
 
-    <div class="surface-card detail-card">
-      <strong>Detalle base del envío</strong>
-      <p>Las pestañas de resumen, seguimiento, fechas, contenedor, financiero, documentos e historial se construirán en fases posteriores.</p>
-    </div>
-  } @else {
-    <div class="surface-card empty-state">
-      <strong>Envío no encontrado</strong>
-      <p>El identificador solicitado no existe en los datos simulados iniciales.</p>
-    </div>
+          <span class="detail-header__mode" [class]="'detail-header__mode ' + getModeClass(shipment.transportMode)">
+            <mat-icon aria-hidden="true">{{ getTransportModeIcon(shipment.transportMode) }}</mat-icon>
+          </span>
+
+          <div class="detail-header__title">
+            <span class="text-label">{{ getDocumentType(shipment) }}</span>
+            <h1>{{ shipment.documentNumber }}</h1>
+          </div>
+
+          <button mat-icon-button type="button" [attr.aria-label]="'Copiar documento ' + shipment.documentNumber" title="Copiar documento" (click)="copyDocument(shipment.documentNumber)">
+            <mat-icon aria-hidden="true">content_copy</mat-icon>
+          </button>
+
+          @if (copied()) {
+            <span class="copy-feedback">Copiado</span>
+          }
+        </div>
+
+        <div class="detail-header__meta">
+          <span class="status-chip" [class]="'status-chip ' + getStatusChipClass(shipment)">
+            <mat-icon aria-hidden="true">{{ getShipmentStatusIcon(shipment.status) }}</mat-icon>
+            {{ getShipmentStatusLabel(shipment.status) }}
+          </span>
+          <span>{{ getOperationTypeLabel(shipment.operationType) }}</span>
+          <span>{{ getTransportModeLabel(shipment.transportMode) }}</span>
+          <span>Incoterm {{ shipment.incoterm }}</span>
+          <span>{{ shipment.cargoType }}</span>
+          <span>{{ getRouteLabel(shipment) }}</span>
+        </div>
+      </header>
+
+      <nav class="detail-tabs" aria-label="Secciones del envío">
+        @for (tab of tabs; track tab.id) {
+          <button
+            type="button"
+            [class.detail-tabs__button--active]="viewModel.selectedTab === tab.id"
+            [attr.aria-current]="viewModel.selectedTab === tab.id ? 'page' : null"
+            (click)="selectTab(tab.id)"
+          >
+            {{ tab.label }}
+          </button>
+        }
+      </nav>
+
+      @switch (viewModel.selectedTab) {
+        @case ('summary') {
+          <section class="detail-grid" aria-label="Resumen del envío">
+            <article class="surface-card detail-section">
+              <h2>Información del envío</h2>
+              <dl class="detail-list">
+                @for (field of getShipmentInfoFields(shipment); track field.label) {
+                  <div>
+                    <dt>{{ field.label }}</dt>
+                    <dd>{{ field.value }}</dd>
+                  </div>
+                }
+              </dl>
+            </article>
+
+            <article class="surface-card detail-section">
+              <h2>Ruta y carga</h2>
+              <dl class="detail-list">
+                @for (field of getRouteCargoFields(shipment); track field.label) {
+                  <div>
+                    <dt>{{ field.label }}</dt>
+                    <dd>{{ field.value }}</dd>
+                  </div>
+                }
+              </dl>
+            </article>
+
+            @if (shipment.issue; as issue) {
+              <article class="surface-card detail-section issue-card">
+                <h2>{{ getIssueTitle(issue) }}</h2>
+                <p>{{ issue.comment }}</p>
+                <dl class="detail-list detail-list--compact">
+                  <div>
+                    <dt>Fecha</dt>
+                    <dd>{{ formatDate(issue.date) }}</dd>
+                  </div>
+                  <div>
+                    <dt>Severidad</dt>
+                    <dd>{{ getIssueSeverity(issue) }}</dd>
+                  </div>
+                </dl>
+              </article>
+            }
+          </section>
+        }
+
+        @case ('dates') {
+          <section class="surface-card detail-section" aria-label="Fechas logísticas">
+            <h2>Fechas logísticas</h2>
+            <div class="dates-table" role="table" aria-label="Fechas estimadas y reales">
+              <div class="dates-table__row dates-table__row--head" role="row">
+                <span role="columnheader">Hito</span>
+                <span role="columnheader">Estimada</span>
+                <span role="columnheader">Real</span>
+                <span role="columnheader">Estado</span>
+              </div>
+              @for (row of getLogisticDateRows(shipment); track row.label) {
+                <div class="dates-table__row" role="row">
+                  <strong role="cell">{{ row.label }}</strong>
+                  <span role="cell">{{ row.estimated }}</span>
+                  <span role="cell">{{ row.actual }}</span>
+                  <span role="cell" class="date-state" [class]="'date-state date-state--' + row.state">{{ row.stateLabel }}</span>
+                </div>
+              }
+            </div>
+          </section>
+        }
+
+        @case ('container') {
+          @if (shipment.transportMode === 'SEA' && shipment.container; as container) {
+            <section class="surface-card detail-section" aria-label="Información del contenedor">
+              <h2>Contenedor</h2>
+              <dl class="detail-list detail-list--three">
+                @for (field of getContainerFields(container); track field.label) {
+                  <div>
+                    <dt>{{ field.label }}</dt>
+                    <dd>{{ field.value }}</dd>
+                  </div>
+                }
+              </dl>
+            </section>
+          } @else {
+            <section class="surface-card empty-section" aria-label="Contenedor no aplica">
+              <strong>No aplica para esta operación.</strong>
+            </section>
+          }
+        }
+
+        @case ('financial') {
+          <section class="financial-grid" aria-label="Información financiera">
+            @if (hasFinancialInfo(shipment.financialInfo)) {
+              <article class="surface-card detail-section">
+                <h2>Anticipo</h2>
+                @if (getAdvanceFields(shipment.financialInfo).length) {
+                  <dl class="detail-list">
+                    @for (field of getAdvanceFields(shipment.financialInfo); track field.label) {
+                      <div>
+                        <dt>{{ field.label }}</dt>
+                        <dd>{{ field.value }}</dd>
+                      </div>
+                    }
+                  </dl>
+                } @else {
+                  <p class="section-empty-text">Sin anticipo registrado.</p>
+                }
+              </article>
+
+              <article class="surface-card detail-section">
+                <h2>Facturación</h2>
+                @if (getInvoiceFields(shipment.financialInfo).length) {
+                  <dl class="detail-list">
+                    @for (field of getInvoiceFields(shipment.financialInfo); track field.label) {
+                      <div>
+                        <dt>{{ field.label }}</dt>
+                        <dd>{{ field.value }}</dd>
+                      </div>
+                    }
+                  </dl>
+                } @else {
+                  <p class="section-empty-text">Sin facturación registrada.</p>
+                }
+              </article>
+
+              <article class="surface-card detail-section financial-summary">
+                <h2>Resumen</h2>
+                @if (getFinancialSummaryFields(shipment.financialInfo).length) {
+                  <dl class="detail-list">
+                    @for (field of getFinancialSummaryFields(shipment.financialInfo); track field.label) {
+                      <div>
+                        <dt>{{ field.label }}</dt>
+                        <dd>{{ field.value }}</dd>
+                      </div>
+                    }
+                  </dl>
+                } @else {
+                  <p class="section-empty-text">Sin resumen financiero disponible.</p>
+                }
+              </article>
+            } @else {
+              <article class="surface-card empty-section">
+                <strong>Sin información financiera disponible.</strong>
+              </article>
+            }
+          </section>
+        }
+
+        @default {
+          <section class="surface-card empty-section">
+            <strong>Sección pendiente de implementación.</strong>
+            <p>Esta pestaña queda preparada para la siguiente fase.</p>
+          </section>
+        }
+      }
+    }
   }
 </section>

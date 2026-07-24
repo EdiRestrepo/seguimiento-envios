@@ -1,0 +1,115 @@
+1. Dejar comentado el inicio de sesion, registro, mockup base 44
+	Logo inicio de sesion, registro, en icono de angular
+	eslogan inicio de sesion y restro
+
+----
+2. Auth0
+	logo mas grande en inicio de sesión, registro
+	Don't have an account? esto en español (unificar lenguaje) 
+	Registro debe de llevar nombre, empresa, telefono
+	Registro organizar nombre de la app, eslogan, Already have an account? (unificar lenguaje) 
+
+3. Logo, eslogan, nombre mas grandes
+
+3. Inicio
+	ajustar importacion/exportacion
+		modalidad area/maritimos
+		con novedad/entregados
+
+
+------------------------------------------
+
+Contractos
+
+Request:
+	Headers
+		Content-Type: application/json
+		Accept: application/jsonAuthorization: 
+		Bearer: <token>
+	DataRequest: {[]}
+ 
+Response:
+{
+	"timestamp":
+	"status":
+	"error": 
+	"message": 
+	"dataResponse":
+		[{}]
+	"meta":{
+		"totalItems": 100,
+		"totalPages": 10,
+		"currentPage": 1,
+		"limit": 10
+	}
+	"path": 
+}
+
+
+-----------------------------------
+
+DataRequest FronEnd
+FrontEnd-WebApplication:	
+		-Login: No consume Api
+		-Register: No consume Api
+		-Home(Inicio): 
+		apiURL: home/totals
+		DataRequest {
+			IdentificacionCliente
+			Rol
+		}
+		-Home(Filtro)
+		apiURL: home/Filter
+		DataRequest {
+			IdentificacionCliente
+			Rol
+			ValorFiltrar
+			CamposFiltro[HBL,MBL,AWD]
+				MBL: GuiaMasterMaritimo
+				HBL: GuiaMasterHijaMaritimo
+				AWD: GuiaAereo
+		}
+
+
+-------------------------------------------------
+
+DataResponse
+Backend-Api:
+	Response		
+		-Login: No consume Api
+		-Register: No consume Api
+		-Home(Inicio)
+		apiURL: home/totals
+		DataResponse {
+			TotalEnvios
+			TotalImportaciones
+			TotalExportaciones
+			totalmodalidadarea
+			totalmodalidadmaritima
+			totalConNovedad
+			ListaEnviosRecientes(ultimos10): [{
+				NroDocumento
+				Origen
+				Destino
+				Estado
+				TIPOOPERACION(IMPO-EXPO)
+				MODALIDAD(AEREO-MARITIMO)
+				}
+			]
+		}
+		-Home(Filtro)
+		apiURL: home/Filter
+			DataResponse {			
+				NroDocumento
+				Origen
+				Destino
+				Estado
+				TIPOOPERACION(IMPO-EXPO)
+				MODALIDAD(AEREO-MARITIMO)
+			}
+
+
+		
+		
+
+
