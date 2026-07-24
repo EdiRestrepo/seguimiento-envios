@@ -166,6 +166,71 @@ describe('ShipmentDetail', () => {
     expect(getText()).toContain('1.980');
   }));
 
+  it('should calculate tracking progress and active stage', fakeAsync(() => {
+    getByIdSpy.and.returnValue(
+      of(
+        createShipment({
+          status: 'IN_TRANSIT',
+          events: [{ id: 'event-1', dateTime: '2026-01-02T08:30:00.000Z', status: 'IN_TRANSIT', location: { country: 'México' }, description: 'Salida.', source: 'Mock' }],
+        }),
+      ),
+    );
+    setQueryParams({ tab: 'tracking' });
+    fixture = TestBed.createComponent(ShipmentDetail);
+    render();
+
+    const progress = fixture.nativeElement.querySelector('[role="progressbar"]') as HTMLElement;
+    const currentStage = fixture.nativeElement.querySelector('.tracking-stages__item--current') as HTMLElement;
+
+    expect(progress.getAttribute('aria-valuenow')).toBe('50');
+    expect(currentStage.textContent).toContain('En tránsito');
+  }));
+
+  it('should calculate next stop from logistic dates and destination', fakeAsync(() => {
+    getByIdSpy.and.returnValue(of(createShipment({ status: 'IN_TRANSIT', logisticDates: { eta: '2026-01-05' } })));
+    setQueryParams({ tab: 'tracking' });
+    fixture = TestBed.createComponent(ShipmentDetail);
+    render();
+
+    expect(getText()).toContain('Bogotá, Colombia');
+    expect(getText()).toContain('05 de ene de 2026');
+  }));
+
+  it('should render delivered tracking as complete without next stop', fakeAsync(() => {
+    getByIdSpy.and.returnValue(of(createShipment({ status: 'DELIVERED', logisticDates: { delivery: '2026-01-10' } })));
+    setQueryParams({ tab: 'tracking' });
+    fixture = TestBed.createComponent(ShipmentDetail);
+    render();
+
+    expect(getText()).toContain('100%');
+    expect(getText()).toContain('No hay próxima parada para este estado.');
+  }));
+
+  it('should render coordinate fallback when coordinates are absent', fakeAsync(() => {
+    getByIdSpy.and.returnValue(
+      of(
+        createShipment({
+          origin: { country: 'España', city: 'Madrid', terminal: null },
+          destination: { country: 'Colombia', city: 'Bogotá', terminal: null, latitude: 4.711, longitude: -74.0721 },
+        }),
+      ),
+    );
+    setQueryParams({ tab: 'tracking' });
+    fixture = TestBed.createComponent(ShipmentDetail);
+    render();
+
+    expect(getText()).toContain('Mapa no disponible');
+    expect(getText()).toContain('No hay coordenadas suficientes');
+  }));
+
+  it('should render textual tracking summary independent from the map', fakeAsync(() => {
+    setQueryParams({ tab: 'tracking' });
+    render();
+
+    expect(getText()).toContain('Envío desde Ciudad de México, México hacia Bogotá, Colombia');
+    expect(getText()).toContain('Ubicación simulada para fines del prototipo.');
+  }));
+
   function render(): void {
     fixture.detectChanges();
     tick();
@@ -208,8 +273,8 @@ function createShipment(input: ShipmentInput = {}): Shipment {
     client: 'Enka',
     provider: 'Global Freight Logistics S.A.S.',
     incoterm: 'DAP',
-    origin: { country: 'México', city: 'Ciudad de México', terminal: null },
-    destination: { country: 'Colombia', city: 'Bogotá', terminal: null },
+    origin: { country: 'México', city: 'Ciudad de México', terminal: null, latitude: 19.4326, longitude: -99.1332 },
+    destination: { country: 'Colombia', city: 'Bogotá', terminal: null, latitude: 4.711, longitude: -74.0721 },
     merchandiseDescription: 'Textiles',
     cargoType: 'LCL',
     packages: 12,

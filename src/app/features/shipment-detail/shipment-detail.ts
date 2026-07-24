@@ -1,17 +1,36 @@
 ﻿import { AsyncPipe } from '@angular/common';
-import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
+import {
+  AfterViewChecked,
+  ChangeDetectionStrategy,
+  Component,
+  ElementRef,
+  OnDestroy,
+  ViewChild,
+  inject,
+  signal,
+} from '@angular/core';
 import { ActivatedRoute, ParamMap, Params, Router } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
-import { Observable, Subject, catchError, combineLatest, map, of, startWith, switchMap } from 'rxjs';
+import * as L from 'leaflet';
+import { Observable, Subject, catchError, combineLatest, map, of, startWith, switchMap, tap } from 'rxjs';
 
-import { Container, Shipment, ShipmentFinancialInfo, ShipmentIssue, TransportMode } from '../../core/models/shipment.model';
+import {
+  Container,
+  Location,
+  Shipment,
+  ShipmentFinancialInfo,
+  ShipmentIssue,
+  ShipmentStatus,
+  TransportMode,
+} from '../../core/models/shipment.model';
 import {
   ShipmentChipType,
   getOperationTypeLabel,
   getShipmentStatusChipType,
   getShipmentStatusIcon,
   getShipmentStatusLabel,
+  getShipmentStatusOrder,
   getTransportModeIcon,
   getTransportModeLabel,
 } from '../../core/utils/display-labels';
@@ -20,6 +39,7 @@ import { MockShipmentService } from '../../mocks/services/mock-shipment.service'
 type DetailState = 'loading' | 'error' | 'not-found' | 'success';
 type DetailTab = 'summary' | 'tracking' | 'dates' | 'container' | 'financial' | 'documents' | 'history';
 type DateState = 'on-time' | 'delayed' | 'pending' | 'not-applicable' | 'no-data';
+type TrackingStageState = 'completed' | 'current' | 'pending';
 
 interface DetailViewModel {
   state: DetailState;
@@ -47,8 +67,24 @@ interface LogisticDateRow {
   stateLabel: string;
 }
 
+interface TrackingStage {
+  label: string;
+  state: TrackingStageState;
+}
+
+interface NextStop {
+  location: string;
+  date: string;
+}
+
+interface Coordinates {
+  latitude: number;
+  longitude: number;
+}
+
 const defaultTab: DetailTab = 'summary';
 const tabIds: DetailTab[] = ['summary', 'tracking', 'dates', 'container', 'financial', 'documents', 'history'];
+const trackingStageLabels = ['Pendiente', 'Aduana origen', 'En tránsito', 'Aduana destino', 'Entregado'] as const;
 
 @Component({
   selector: 'app-shipment-detail',
@@ -57,13 +93,19 @@ const tabIds: DetailTab[] = ['summary', 'tracking', 'dates', 'container', 'finan
   styleUrl: './shipment-detail.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class ShipmentDetail {
+export class ShipmentDetail implements AfterViewChecked, OnDestroy {
+  @ViewChild('trackingMap') private readonly trackingMapElement?: ElementRef<HTMLElement>;
+
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly shipmentService = inject(MockShipmentService);
   private readonly retry$ = new Subject<void>();
+  private readonly currentViewModel = signal<DetailViewModel | null>(null);
+  private map: L.Map | null = null;
+  private mapKey = '';
 
   protected readonly copied = signal(false);
+  protected readonly mapError = signal(false);
   protected readonly tabs: TabItem[] = [
     { id: 'summary', label: 'Resumen' },
     { id: 'tracking', label: 'Seguimiento' },
@@ -104,6 +146,7 @@ export class ShipmentDetail {
         ),
       );
     }),
+    tap((viewModel) => this.currentViewModel.set(viewModel)),
   );
 
   protected readonly getOperationTypeLabel = getOperationTypeLabel;
@@ -111,6 +154,31 @@ export class ShipmentDetail {
   protected readonly getTransportModeIcon = getTransportModeIcon;
   protected readonly getShipmentStatusLabel = getShipmentStatusLabel;
   protected readonly getShipmentStatusIcon = getShipmentStatusIcon;
+
+  ngAfterViewChecked(): void {
+    const viewModel = this.currentViewModel();
+    const shipment = viewModel?.shipment;
+    const element = this.trackingMapElement?.nativeElement;
+
+    if (viewModel?.selectedTab !== 'tracking' || !shipment || !element || !this.hasTrackingCoordinates(shipment)) {
+      if (viewModel?.selectedTab !== 'tracking') {
+        this.destroyMap();
+      }
+      return;
+    }
+
+    const key = `${shipment.id}-${this.getTrackingProgress(shipment)}`;
+    if (this.map && this.mapKey === key) {
+      this.map.invalidateSize();
+      return;
+    }
+
+    this.renderMap(element, shipment, key);
+  }
+
+  ngOnDestroy(): void {
+    this.destroyMap();
+  }
 
   protected retry(): void {
     this.retry$.next();
@@ -202,6 +270,76 @@ export class ShipmentDetail {
 
   protected getIssueSeverity(issue: ShipmentIssue): string {
     return issue.resolved ? 'Resuelta' : 'Activa';
+  }
+
+  protected getTrackingSummary(shipment: Shipment): string {
+    return `Envío desde ${this.getLocationLabel(shipment.origin)} hacia ${this.getLocationLabel(shipment.destination)}, actualmente en ${this.getCurrentLocationLabel(shipment)}.`;
+  }
+
+  protected getCurrentLocationLabel(shipment: Shipment): string {
+    const stageIndex = this.getTrackingStageIndex(shipment);
+
+    if (shipment.status === 'CANCELLED') {
+      return 'operación cancelada';
+    }
+
+    if (stageIndex <= 1) {
+      return this.getLocationLabel(shipment.origin);
+    }
+
+    if (stageIndex === 2) {
+      return shipment.transportMode === 'AIR' ? 'ruta aérea internacional' : 'ruta marítima internacional';
+    }
+
+    return this.getLocationLabel(shipment.destination);
+  }
+
+  protected getStatusDescription(shipment: Shipment): string {
+    if (shipment.status === 'DELIVERED') {
+      return 'La operación registra entrega final en los datos simulados.';
+    }
+
+    if (shipment.status === 'CANCELLED') {
+      return 'La operación fue cancelada y no tiene avance logístico activo.';
+    }
+
+    if (shipment.issue) {
+      return shipment.issue.comment;
+    }
+
+    return `El envío se encuentra en ${getShipmentStatusLabel(shipment.status).toLowerCase()} según los eventos simulados.`;
+  }
+
+  protected getTrackingProgress(shipment: Shipment): number {
+    const stageIndex = this.getTrackingStageIndex(shipment);
+    return Math.round((stageIndex / (trackingStageLabels.length - 1)) * 100);
+  }
+
+  protected getTrackingStages(shipment: Shipment): TrackingStage[] {
+    const currentIndex = this.getTrackingStageIndex(shipment);
+
+    return trackingStageLabels.map((label, index) => ({
+      label,
+      state: shipment.status === 'DELIVERED' || index < currentIndex ? 'completed' : index === currentIndex ? 'current' : 'pending',
+    }));
+  }
+
+  protected getNextStop(shipment: Shipment): NextStop | null {
+    if (shipment.status === 'DELIVERED' || shipment.status === 'CANCELLED') {
+      return null;
+    }
+
+    const nextStageIndex = Math.min(this.getTrackingStageIndex(shipment) + 1, trackingStageLabels.length - 1);
+    const location = nextStageIndex <= 1 ? shipment.origin : shipment.destination;
+
+    return {
+      location: this.getLocationLabel(location),
+      date: this.formatDate(this.getEstimatedDateForStage(shipment, nextStageIndex)),
+    };
+  }
+
+  protected hasTrackingCoordinates(shipment: Shipment): boolean {
+    return Boolean(this.getCoordinates(shipment.origin) && this.getCoordinates(shipment.destination));
   }
 
   protected getLogisticDateRows(shipment: Shipment): LogisticDateRow[] {
@@ -307,6 +445,125 @@ export class ShipmentDetail {
 
   protected getModeClass(mode: TransportMode): string {
     return mode === 'AIR' ? 'detail-header__mode--air' : 'detail-header__mode--sea';
+  }
+
+  private renderMap(element: HTMLElement, shipment: Shipment, key: string): void {
+    this.destroyMap();
+    const origin = this.getCoordinates(shipment.origin);
+    const destination = this.getCoordinates(shipment.destination);
+
+    if (!origin || !destination) {
+      return;
+    }
+
+    try {
+      this.map = L.map(element, { zoomControl: true, attributionControl: true });
+      this.mapKey = key;
+      this.mapError.set(false);
+
+      const originPoint = L.latLng(origin.latitude, origin.longitude);
+      const destinationPoint = L.latLng(destination.latitude, destination.longitude);
+      const current = this.getCurrentCoordinates(origin, destination, this.getTrackingProgress(shipment));
+      const currentPoint = L.latLng(current.latitude, current.longitude);
+      const route = [originPoint, currentPoint, destinationPoint];
+
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 18,
+        attribution: '&copy; OpenStreetMap contributors',
+      }).addTo(this.map);
+
+      L.polyline(route, { color: '#00B8A9', weight: 4, dashArray: shipment.transportMode === 'AIR' ? '8 10' : undefined }).addTo(this.map);
+      this.createMarker(originPoint, 'Origen').addTo(this.map);
+      this.createMarker(destinationPoint, 'Destino').addTo(this.map);
+      this.createMarker(currentPoint, 'Posición actual simulada', '#F97316').addTo(this.map);
+      this.map.fitBounds(L.latLngBounds(route), { padding: [28, 28], maxZoom: 5 });
+    } catch {
+      this.mapError.set(true);
+      this.destroyMap();
+    }
+  }
+
+  private createMarker(point: L.LatLng, label: string, color = '#12355B'): L.CircleMarker {
+    return L.circleMarker(point, {
+      radius: 8,
+      color,
+      fillColor: color,
+      fillOpacity: 0.9,
+      weight: 2,
+    }).bindTooltip(label);
+  }
+
+  private destroyMap(): void {
+    if (this.map) {
+      this.map.remove();
+      this.map = null;
+      this.mapKey = '';
+    }
+  }
+
+  private getCurrentCoordinates(origin: Coordinates, destination: Coordinates, progress: number): Coordinates {
+    const ratio = Math.min(Math.max(progress / 100, 0), 1);
+    return {
+      latitude: origin.latitude + (destination.latitude - origin.latitude) * ratio,
+      longitude: origin.longitude + (destination.longitude - origin.longitude) * ratio,
+    };
+  }
+
+  private getCoordinates(location: Location): Coordinates | null {
+    if (typeof location.latitude !== 'number' || typeof location.longitude !== 'number') {
+      return null;
+    }
+
+    return { latitude: location.latitude, longitude: location.longitude };
+  }
+
+  private getTrackingStageIndex(shipment: Shipment): number {
+    if (shipment.status === 'DELIVERED') {
+      return 4;
+    }
+
+    if (shipment.status === 'CANCELLED') {
+      return 0;
+    }
+
+    const statusStage = this.getStageIndexFromStatus(shipment.status);
+    const eventStage = shipment.events.reduce((max, event) => Math.max(max, this.getStageIndexFromStatus(event.status)), 0);
+
+    return Math.max(statusStage, eventStage);
+  }
+
+  private getStageIndexFromStatus(status: ShipmentStatus): number {
+    const order = getShipmentStatusOrder(status);
+
+    if (status === 'DELIVERED') {
+      return 4;
+    }
+
+    if (status === 'CANCELLED' || status === 'PENDING') {
+      return 0;
+    }
+
+    if (order <= 2) {
+      return 1;
+    }
+
+    if (status === 'IN_TRANSIT') {
+      return 2;
+    }
+
+    return 3;
+  }
+
+  private getEstimatedDateForStage(shipment: Shipment, stageIndex: number): string | null | undefined {
+    const dates = shipment.logisticDates;
+    const values: Record<number, string | null | undefined> = {
+      1: dates.etd ?? dates.originWarehouse,
+      2: dates.eta ?? dates.etd,
+      3: dates.nationalization ?? dates.eta,
+      4: dates.delivery ?? dates.eta,
+    };
+
+    return values[stageIndex];
   }
 
   private createDateRow(label: string, estimated: string | null | undefined, actual: string | null | undefined, applies: boolean): LogisticDateRow {

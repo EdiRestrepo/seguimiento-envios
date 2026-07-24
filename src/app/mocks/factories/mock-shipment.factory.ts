@@ -148,11 +148,30 @@ function createShipment(seedItem: ShipmentSeed, sequence: number): Shipment {
 }
 
 function createLocation(country: string, city: string | null): Location {
+  const coordinates = getCountryCoordinates(country);
+
   return {
     country,
     city,
     terminal: city ? `${city} Terminal logística` : null,
+    latitude: coordinates?.latitude ?? null,
+    longitude: coordinates?.longitude ?? null,
   };
+}
+
+function getCountryCoordinates(country: string): Pick<Location, 'latitude' | 'longitude'> | null {
+  const coordinates: Record<string, Pick<Location, 'latitude' | 'longitude'>> = {
+    Alemania: { latitude: 50.1109, longitude: 8.6821 },
+    Brasil: { latitude: -23.5505, longitude: -46.6333 },
+    Chile: { latitude: -33.4489, longitude: -70.6693 },
+    China: { latitude: 31.2304, longitude: 121.4737 },
+    Colombia: { latitude: 4.711, longitude: -74.0721 },
+    'Estados Unidos': { latitude: 25.7617, longitude: -80.1918 },
+    México: { latitude: 19.4326, longitude: -99.1332 },
+    Perú: { latitude: -12.0464, longitude: -77.0428 },
+  };
+
+  return coordinates[country] ?? null;
 }
 
 function createLogisticDates(status: ShipmentStatus, baseDay: number) {

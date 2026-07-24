@@ -25,6 +25,8 @@ export interface Location {
   country: string;
   city?: string | null;
   terminal?: string | null;
+  latitude?: number | null;
+  longitude?: number | null;
 }
 
 export interface LogisticDates {
