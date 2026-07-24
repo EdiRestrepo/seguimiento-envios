@@ -342,7 +342,8 @@ function getNextStop(status: ShipmentStatus): string | null {
 }
 
 function isoDate(day: number): string {
-  return `2026-01-${day.toString().padStart(2, '0')}`;
+  const date = new Date(Date.UTC(2026, 0, day));
+  return date.toISOString().slice(0, 10);
 }
 
 function stableCode(value: number): string {

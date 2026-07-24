@@ -1,5 +1,6 @@
 ﻿.sidebar {
   display: flex;
+  height: 100%;
   min-height: 100vh;
   flex-direction: column;
   background: linear-gradient(180deg, var(--color-sidebar) 0%, #08233f 100%);

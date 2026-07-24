@@ -132,6 +132,28 @@ describe('MockShipmentService', () => {
     tick();
   }));
 
+  it('should generate valid ISO dates for mock shipments', fakeAsync(() => {
+    service.getAll().subscribe((shipments) => {
+      const dates = shipments.flatMap((shipment) => [
+        ...Object.values(shipment.logisticDates),
+        ...shipment.documents.map((document) => document.date),
+        ...shipment.events.map((event) => event.dateTime),
+        shipment.issue?.date,
+        shipment.container?.returnDate,
+        shipment.financialInfo.advancePayment?.requestedAt,
+        shipment.financialInfo.advancePayment?.paidAt,
+        shipment.financialInfo.invoice?.invoiceDate,
+      ]);
+
+      expect(
+        dates
+          .filter((date): date is string => typeof date === 'string')
+          .every((date) => !Number.isNaN(new Date(date).getTime())),
+      ).toBeTrue();
+    });
+    tick();
+  }));
+
   it('should omit container when it does not apply to AIR shipments', fakeAsync(() => {
     service.search({ transportMode: 'AIR', page: 1, pageSize: 1 }).subscribe((result) => {
       expect('container' in result.items[0]).toBeTrue();

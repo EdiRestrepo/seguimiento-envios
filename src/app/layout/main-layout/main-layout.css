@@ -1,19 +1,23 @@
 .shell {
   min-height: 100vh;
+  align-items: stretch;
   background: var(--color-background);
 }
 
 .shell__sidebar {
   display: none;
+  background: var(--color-sidebar);
 }
 
 .shell__body {
   min-width: 0;
+  max-width: 100%;
+  overflow-x: hidden;
 }
 
 .shell__content {
   padding: 28px;
-  overflow-x: clip;
+  overflow-x: hidden;
 }
 
 @media (min-width: 900px) {

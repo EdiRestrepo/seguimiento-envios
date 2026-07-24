@@ -1,66 +1,184 @@
-﻿<section class="page">
+﻿<section class="page shipments-page">
   <header class="page__header">
     <h1 class="page__title">Envíos internacionales</h1>
-    <p class="page__subtitle">Consulta inicial de envíos IMPO / EXPO · AIR / SEA.</p>
+    <p class="page__subtitle">Gestiona y consulta todos los envíos IMPO / EXPO · AIR / SEA</p>
   </header>
 
-  <div class="surface-card shipments-toolbar">
-    <label>
+  <section class="surface-card shipments-toolbar" aria-label="Filtros de envíos">
+    <label class="shipments-toolbar__search">
       <span>Buscar</span>
       <input
         type="search"
         [formControl]="searchControl"
-        placeholder="HBL, AWB, cliente, origen o destino"
+        placeholder="HBL, AWB, MBL, cliente, origen o destino"
         aria-label="Buscar envíos"
       />
     </label>
-  </div>
+
+    <label>
+      <span>Operación</span>
+      <select [formControl]="operationControl" aria-label="Filtrar por operación">
+        <option value="">IMPO + EXPO</option>
+        <option value="IMPO">Importaciones</option>
+        <option value="EXPO">Exportaciones</option>
+      </select>
+    </label>
+
+    <label>
+      <span>Modalidad</span>
+      <select [formControl]="modeControl" aria-label="Filtrar por modalidad">
+        <option value="">AIR + SEA</option>
+        <option value="AIR">Aéreo</option>
+        <option value="SEA">Marítimo</option>
+      </select>
+    </label>
+
+    <label>
+      <span>Estado</span>
+      <select [formControl]="statusControl" aria-label="Filtrar por estado">
+        <option value="">Todos los estados</option>
+        @for (status of statusOptions; track status) {
+          <option [value]="status">{{ getShipmentStatusLabel(status) }}</option>
+        }
+      </select>
+    </label>
+  </section>
 
   @if (viewModel$ | async; as viewModel) {
+    <section class="shipments-summary" aria-label="Resumen de resultados">
+      <article class="surface-card summary-card">
+        <span>Total resultados</span>
+        <strong>{{ viewModel.summary.total }}</strong>
+      </article>
+      <article class="surface-card summary-card">
+        <span>Aéreos</span>
+        <strong>{{ viewModel.summary.air }}</strong>
+      </article>
+      <article class="surface-card summary-card">
+        <span>Marítimos</span>
+        <strong>{{ viewModel.summary.sea }}</strong>
+      </article>
+    </section>
+
     <div class="surface-card shipments-card">
       @if (viewModel.state === 'loading') {
         <div class="loading-state">
           <strong>Cargando envíos...</strong>
-          <p>Consultando datos simulados.</p>
+          <p>Consultando operaciones activas.</p>
         </div>
       } @else if (viewModel.state === 'error') {
         <div class="error-state">
           <strong>No se pudo cargar la información</strong>
           <p>{{ viewModel.message }}</p>
+          <button mat-stroked-button type="button" (click)="retry()">Reintentar</button>
         </div>
       } @else if (viewModel.state === 'empty') {
         <div class="empty-state">
-          <strong>No hay envíos para mostrar</strong>
-          <p>Ajusta la búsqueda o vuelve a intentar con otro criterio.</p>
+          <strong>No hay envíos activos para mostrar</strong>
+          <p>{{ viewModel.message }}</p>
+          <button mat-stroked-button type="button" (click)="clearFilters()">Limpiar filtros</button>
         </div>
       } @else {
-        <div class="shipments-table" role="table" aria-label="Listado de envíos">
-          <div class="shipments-table__row shipments-table__row--head" role="row">
-            <span role="columnheader">Documento</span>
-            <span role="columnheader">Estado</span>
-            <span role="columnheader">Op · Modal</span>
-            <span role="columnheader">Cliente</span>
-            <span role="columnheader">Origen → Destino</span>
-            <span role="columnheader">ETA</span>
-            <span role="columnheader">Ver</span>
-          </div>
-
-          @for (shipment of viewModel.shipments; track shipment.id) {
-            <div class="shipments-table__row" role="row">
-              <strong role="cell">{{ shipment.documentNumber }}</strong>
-              <span role="cell" class="status-chip" [class.status-chip--issue]="shipment.status === 'WITH_ISSUE'">
-                {{ getShipmentStatusLabel(shipment.status) }}
-              </span>
-              <span role="cell">
-                {{ getOperationTypeLabel(shipment.operationType) }} · {{ getTransportModeLabel(shipment.transportMode) }}
-              </span>
-              <span role="cell">{{ shipment.client }}</span>
-              <span role="cell">{{ getLocationLabel(shipment) }}</span>
-              <span role="cell">{{ shipment.logisticDates.eta ?? 'Sin fecha' }}</span>
-              <a role="cell" mat-button [routerLink]="['/shipments', shipment.id]">Abrir</a>
+        <div class="shipments-table-wrap">
+          <div class="shipments-table" role="table" aria-label="Listado de envíos activos">
+            <div class="shipments-table__row shipments-table__row--head" role="row">
+              <span role="columnheader">Modalidad</span>
+              <span role="columnheader">Documento</span>
+              <span role="columnheader">Estado</span>
+              <span role="columnheader">Operación</span>
+              <span role="columnheader">Modalidad</span>
+              <span role="columnheader">Cliente</span>
+              <span role="columnheader">Origen → Destino</span>
+              <span role="columnheader">ETD</span>
+              <span role="columnheader">ATD</span>
+              <span role="columnheader">ETA</span>
+              <span role="columnheader">ATA</span>
+              <span role="columnheader">Ver</span>
             </div>
+
+            @for (shipment of viewModel.shipments; track shipment.id) {
+              <div class="shipments-table__row" role="row">
+                <span role="cell" class="mode-icon" [title]="getTransportModeLabel(shipment.transportMode)">
+                  <mat-icon aria-hidden="true">{{ getTransportModeIcon(shipment.transportMode) }}</mat-icon>
+                </span>
+                <strong role="cell">{{ shipment.documentNumber }}</strong>
+                <span role="cell" class="status-chip" [class]="'status-chip ' + getStatusChipClass(shipment.status)">
+                  <mat-icon aria-hidden="true">{{ getShipmentStatusIcon(shipment.status) }}</mat-icon>
+                  {{ getShipmentStatusLabel(shipment.status) }}
+                </span>
+                <span role="cell">{{ getOperationTypeLabel(shipment.operationType) }}</span>
+                <span role="cell">{{ getTransportModeLabel(shipment.transportMode) }}</span>
+                <span role="cell">{{ shipment.client }}</span>
+                <span role="cell">{{ getLocationLabel(shipment) }}</span>
+                <span role="cell">{{ formatDate(shipment.logisticDates.etd) }}</span>
+                <span role="cell">{{ formatDate(shipment.logisticDates.atd) }}</span>
+                <span role="cell">{{ formatDate(shipment.logisticDates.eta) }}</span>
+                <span role="cell">{{ formatDate(shipment.logisticDates.ata) }}</span>
+                <span role="cell" class="detail-action">
+                  <a
+                    mat-icon-button
+                    [routerLink]="['/shipments', shipment.id]"
+                    [queryParams]="viewModel.queryParams"
+                    [attr.aria-label]="'Ver detalle del envío ' + shipment.documentNumber"
+                    title="Ver detalle"
+                  >
+                    <mat-icon aria-hidden="true">visibility</mat-icon>
+                  </a>
+                </span>
+              </div>
+            }
+          </div>
+        </div>
+
+        <div class="shipments-mobile-list" aria-label="Listado móvil de envíos activos">
+          @for (shipment of viewModel.shipments; track shipment.id) {
+            <article class="shipment-mobile-card">
+              <header>
+                <span class="mode-icon" aria-hidden="true"><mat-icon>{{ getTransportModeIcon(shipment.transportMode) }}</mat-icon></span>
+                <div>
+                  <strong>{{ shipment.documentNumber }}</strong>
+                  <small>{{ getLocationLabel(shipment) }}</small>
+                </div>
+                <a
+                  mat-icon-button
+                  [routerLink]="['/shipments', shipment.id]"
+                  [queryParams]="viewModel.queryParams"
+                  [attr.aria-label]="'Ver detalle del envío ' + shipment.documentNumber"
+                  title="Ver detalle"
+                >
+                  <mat-icon aria-hidden="true">visibility</mat-icon>
+                </a>
+              </header>
+              <div class="shipment-mobile-card__meta">
+                <span class="status-chip" [class]="'status-chip ' + getStatusChipClass(shipment.status)">{{ getShipmentStatusLabel(shipment.status) }}</span>
+                <span>{{ getOperationTypeLabel(shipment.operationType) }} · {{ getTransportModeLabel(shipment.transportMode) }}</span>
+                <span>{{ shipment.client }}</span>
+                <span>ETA {{ formatDate(shipment.logisticDates.eta) }}</span>
+              </div>
+            </article>
           }
         </div>
+
+        <footer class="shipments-pagination" aria-label="Paginación de envíos">
+          <p>
+            Mostrando {{ viewModel.rangeStart }}-{{ viewModel.rangeEnd }} de {{ viewModel.totalItems }} · Página
+            {{ viewModel.filters.page }} de {{ viewModel.totalPages }}
+          </p>
+          <label>
+            <span>Por página</span>
+            <select [formControl]="pageSizeControl" aria-label="Resultados por página">
+              @for (size of pageSizeOptions; track size) {
+                <option [value]="size">{{ size }}</option>
+              }
+            </select>
+          </label>
+          <div class="shipments-pagination__buttons">
+            <button mat-stroked-button type="button" [disabled]="viewModel.filters.page === 1" (click)="goToPage(1, viewModel.filters)">Primera</button>
+            <button mat-stroked-button type="button" [disabled]="viewModel.filters.page === 1" (click)="goToPage(viewModel.filters.page - 1, viewModel.filters)">Anterior</button>
+            <button mat-stroked-button type="button" [disabled]="viewModel.filters.page === viewModel.totalPages" (click)="goToPage(viewModel.filters.page + 1, viewModel.filters)">Siguiente</button>
+            <button mat-stroked-button type="button" [disabled]="viewModel.filters.page === viewModel.totalPages" (click)="goToPage(viewModel.totalPages, viewModel.filters)">Última</button>
+          </div>
+        </footer>
       }
     </div>
   }
